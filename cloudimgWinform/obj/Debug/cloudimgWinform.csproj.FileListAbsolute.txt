@@ -1,0 +1,13 @@
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\Debug\cloudimgWinform.exe.config
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\Debug\cloudimgWinform.exe
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\Debug\cloudimgWinform.pdb
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\Debug\cloudimgWinform.csprojResolveAssemblyReference.cache
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\Debug\cloudimgWinform.login.resources
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\Debug\cloudimgWinform.Properties.Resources.resources
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\Debug\cloudimgWinform.csproj.GenerateResource.Cache
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\Debug\cloudimgWinform.exe
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\Debug\cloudimgWinform.pdb
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\Debug\Newtonsoft.Json.dll
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\Debug\Newtonsoft.Json.xml
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\Debug\cloudimgWinform.SettingDirectory.resources
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\Debug\Aliyun.OSS.dll
