@@ -15,18 +15,22 @@ namespace cloudimgWinform
 {
     public partial class SettingDirectory : Form
     {
+        public static DataGridView DataView;
         public SettingDirectory()
         {
             InitializeComponent();
-            this.tasksDataView.DataSource = UploadTask.tasks;
-            new Thread (UploadTask.MonitorUpload).Start();
+            DataView = this.tasksDataView;
+            DataView.AutoGenerateColumns = false;
+            DataView.DataSource = UploadTask.tasks;
+            Thread uploadThread=new Thread (UploadTask.MonitorUpload);
+            //窗口关闭 线程退出
+            uploadThread.IsBackground = true;
+            uploadThread.Start();
+            //控件跨线程更新
+            Control.CheckForIllegalCrossThreadCalls = false;
         }
 
-        private void SettingDirectory_Load(object sender, EventArgs e)
-        {
-
-        }
-
+        //选择上传文件
         private void choose_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog();
@@ -35,21 +39,28 @@ namespace cloudimgWinform
             fileDialog.Filter = "所有文件(*.*)|*.*";
             if (fileDialog.ShowDialog() == DialogResult.OK)
             {
-                string file = fileDialog.FileName;
+                string[] files = fileDialog.FileNames;
+                pushUpload(files);
+
+            }
+        }
+
+        private static void pushUpload(string[] files)
+        {
+            foreach (String file in files)
+            {
                 FileInfo fileInfo = new FileInfo(file);
-                String fileName = file.Substring(file.LastIndexOf("\\")+1);
-                UploadTask t = new UploadTask(fileName, file,2, fileInfo.Length);
+                String fileName = file.Substring(file.LastIndexOf("\\") + 1);
+                UploadTask t = new UploadTask(fileName, file, 2, fileInfo.Length);
                 UploadTask.tasks.Add(t);
             }
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
 
-        }
-
+        //数据字段格式化
         private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
+            //状态
             if (this.tasksDataView.Columns["status"].Index == e.ColumnIndex && e.RowIndex >= 0)
             {
                 switch (e.Value){
@@ -76,6 +87,7 @@ namespace cloudimgWinform
                         break;
                 }
             }
+            //文件大小
             else if (this.tasksDataView.Columns["fileSize"].Index == e.ColumnIndex && e.RowIndex >= 0)
             {
                 long fileSize = (long)e.Value;
@@ -89,12 +101,12 @@ namespace cloudimgWinform
                 {
                     e.Value = ((float)fileSize / 1024).ToString("F2") + "kb";
                 }
-                //kb
+                //M
                 else if (fileSize / (1024*1024) > 0 && fileSize / (1024 * 1024* 1024) == 0)
                 {
                     e.Value = ((float)fileSize / 1024/1024).ToString("F2") + "M";
                 }
-                //kb
+                //G
                 else if (fileSize / (1024*1024*1024) > 0)
                 {
                     e.Value = ((float)fileSize / 1024 / 1024/1024).ToString("F2") + "G";
@@ -103,6 +115,7 @@ namespace cloudimgWinform
             }
         }
 
+        //删除任务
         private void delTasks_Click(object sender, EventArgs e)
         {
             int row = tasksDataView.CurrentCell.RowIndex;
@@ -114,6 +127,7 @@ namespace cloudimgWinform
             }
         }
 
+        //单元格右键  选中
         private void tasksDataView_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.RowIndex >= 0 && e.ColumnIndex>0)
@@ -126,6 +140,7 @@ namespace cloudimgWinform
             }
         }
 
+        //窗口关闭事件
         private void SettingDirectory_FormClosed(object sender, FormClosedEventArgs e)
         {
             DialogResult dr = MessageBox.Show("确定退出程序吗？", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
@@ -135,5 +150,50 @@ namespace cloudimgWinform
             }
         }
 
+        //文件拖入
+        private void SettingDirectory_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        //文件拖入
+        private void SettingDirectory_DragDrop(object sender, DragEventArgs e)
+        {
+            String[] files = e.Data.GetData(DataFormats.FileDrop, false) as String[];
+            pushUpload(files);
+        }
+
+        private void SettingDirectory_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.Hide();
+                this.ShowInTaskbar = false;
+                this.notifyIcon.Visible = true;
+            }
+        }
+
+        private void notifyIcon_DoubleClick(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.Show();
+                this.WindowState = FormWindowState.Normal;
+                notifyIcon.Visible = false;
+                this.ShowInTaskbar = true;
+            }
+        }
+
+        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
+        {
+            this.notifyIcon_DoubleClick(sender,e);
+        }
     }
 }

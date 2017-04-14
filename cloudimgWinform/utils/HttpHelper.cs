@@ -123,7 +123,6 @@ namespace cloudimgWinform.utils
             }
             return request.GetResponse() as HttpWebResponse;
         }
-
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {
             return true; //总是接受  

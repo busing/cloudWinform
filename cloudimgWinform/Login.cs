@@ -15,6 +15,8 @@ using System.IO;
 using System.Xml.Linq;
 using System.Runtime.Remoting.Contexts;
 using Newtonsoft.Json.Linq;
+using wrapperTest;
+using System.Collections.Generic;
 
 namespace cloudimgWinform
 {
@@ -24,6 +26,20 @@ namespace cloudimgWinform
         public login()
         {
             InitializeComponent();
+            //test link dll
+            //string[] inputDir = { "S:\\data\\swsi\\jiaoda", "asdasd", "qweqwe" };
+            //int lala = 1;
+            //wrapperTest.wrapperTestClass test = new wrapperTest.wrapperTestClass();
+            //List<String> inputDirList = new List<string>();
+            //inputDirList.Add("asd");
+            //// 实际效果：lala+=1;
+            //lala = test.testPlus1(lala);
+            //// 实际效果：inputDir[0] += "SO WHAT";
+            //string strOut = test.testString(inputDir[0]);
+            //// 实际效果：对于每个输入string，将会输出两个string，内容分别为输入+"so what" 和 输入+"SO WHAT"
+            //List<string> outputDirList = test.testStrings(inputDirList);
+            //Console.WriteLine(outputDirList);
+            //end of test
         }
 
         private void loginbtn_Click(object sender, EventArgs e)
@@ -80,6 +96,10 @@ namespace cloudimgWinform
             this.Hide();
             sd.Show();
         }
-       
+
+        private void login_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -29,14 +29,17 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingDirectory));
             this.choose = new System.Windows.Forms.Button();
             this.tasksDataView = new System.Windows.Forms.DataGridView();
+            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.delTask = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.delTasks = new System.Windows.Forms.ToolStripMenuItem();
-            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.path = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.label1 = new System.Windows.Forms.Label();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.tasksDataView)).BeginInit();
             this.delTask.SuspendLayout();
             this.SuspendLayout();
@@ -66,9 +69,17 @@
             this.tasksDataView.RowTemplate.Height = 23;
             this.tasksDataView.Size = new System.Drawing.Size(660, 280);
             this.tasksDataView.TabIndex = 4;
-            this.tasksDataView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             this.tasksDataView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView1_CellFormatting);
             this.tasksDataView.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.tasksDataView_CellMouseDown);
+            // 
+            // name
+            // 
+            this.name.ContextMenuStrip = this.delTask;
+            this.name.DataPropertyName = "name";
+            this.name.Frozen = true;
+            this.name.HeaderText = "文件名";
+            this.name.Name = "name";
+            this.name.ReadOnly = true;
             // 
             // delTask
             // 
@@ -84,15 +95,6 @@
             this.delTasks.Size = new System.Drawing.Size(124, 22);
             this.delTasks.Text = "删除任务";
             this.delTasks.Click += new System.EventHandler(this.delTasks_Click);
-            // 
-            // name
-            // 
-            this.name.ContextMenuStrip = this.delTask;
-            this.name.DataPropertyName = "name";
-            this.name.Frozen = true;
-            this.name.HeaderText = "文件名";
-            this.name.Name = "name";
-            this.name.ReadOnly = true;
             // 
             // path
             // 
@@ -119,21 +121,45 @@
             this.status.Name = "status";
             this.status.ReadOnly = true;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(91, 18);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(113, 12);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "选择或拖动文件上传";
+            // 
+            // notifyIcon
+            // 
+            this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+            this.notifyIcon.Text = "泰瑞云图";
+            this.notifyIcon.Visible = true;
+            this.notifyIcon.DoubleClick += new System.EventHandler(this.notifyIcon_DoubleClick);
+            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
+            // 
             // SettingDirectory
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(684, 344);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.tasksDataView);
             this.Controls.Add(this.choose);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "SettingDirectory";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "选择自动上传目录";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SettingDirectory_FormClosed);
-            this.Load += new System.EventHandler(this.SettingDirectory_Load);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.SettingDirectory_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.SettingDirectory_DragEnter);
+            this.Resize += new System.EventHandler(this.SettingDirectory_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.tasksDataView)).EndInit();
             this.delTask.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -146,5 +172,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn path;
         private System.Windows.Forms.DataGridViewTextBoxColumn fileSize;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NotifyIcon notifyIcon;
     }
 }

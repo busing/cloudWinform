@@ -17,7 +17,7 @@ namespace cloudimgWinform.utils.oss
 
         public static string Endpoint = "http://oss-cn-hangzhou.aliyuncs.com";
 
-        public static string UploadPath = "/cloud/images/";
+        public static string UploadPath = "cloud/images/";
 
         public static string Buket = "terrydr-hd-dev";
     }

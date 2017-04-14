@@ -1,0 +1,14 @@
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\cloudimgWinform.exe.config
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\cloudimgWinform.exe
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\cloudimgWinform.pdb
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\Aliyun.OSS.dll
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\Newtonsoft.Json.dll
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\sampleWrapperProj.dll
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\Newtonsoft.Json.xml
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\bin\x64\Release\sampleWrapperProj.pdb
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\x64\Release\cloudimgWinform.login.resources
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\x64\Release\cloudimgWinform.Properties.Resources.resources
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\x64\Release\cloudimgWinform.SettingDirectory.resources
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\x64\Release\cloudimgWinform.csproj.GenerateResource.Cache
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\x64\Release\cloudimgWinform.exe
+E:\git\vsproject\cloudimgWinform\cloudimgWinform\obj\x64\Release\cloudimgWinform.pdb
