@@ -17,6 +17,7 @@ using System.Runtime.Remoting.Contexts;
 using Newtonsoft.Json.Linq;
 using wrapperTest;
 using System.Collections.Generic;
+using cloudimgWinform.dao;
 
 namespace cloudimgWinform
 {
@@ -99,6 +100,7 @@ namespace cloudimgWinform
 
         private void login_Load(object sender, EventArgs e)
         {
+            UploadTaskDao.initDataBase();
 
         }
     }

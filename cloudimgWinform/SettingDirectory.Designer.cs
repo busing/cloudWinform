@@ -69,6 +69,7 @@
             this.tasksDataView.RowTemplate.Height = 23;
             this.tasksDataView.Size = new System.Drawing.Size(660, 280);
             this.tasksDataView.TabIndex = 4;
+            this.tasksDataView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.tasksDataView_CellContentClick);
             this.tasksDataView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView1_CellFormatting);
             this.tasksDataView.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.tasksDataView_CellMouseDown);
             // 
@@ -153,6 +154,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "选择自动上传目录";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SettingDirectory_FormClosed);
+            this.Load += new System.EventHandler(this.SettingDirectory_Load);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.SettingDirectory_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.SettingDirectory_DragEnter);
             this.Resize += new System.EventHandler(this.SettingDirectory_Resize);

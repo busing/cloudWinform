@@ -50,8 +50,16 @@ namespace cloudimgWinform.bean
             SettingDirectory.DataView.Refresh();
             String key = getKey();
             Console.WriteLine("upload file to {0}", key);
-            OSSUpload.UploadMultipart(OSSConfig.Buket, this.path, key);
-            this.status = 5;
+            try
+            {
+                OSSUpload.UploadMultipart(OSSConfig.Buket, this.path, key);
+                this.status = 5;
+            }
+            catch (Exception e)
+            {
+                this.status = 6;
+                Console.WriteLine(e.Message);
+            }
             SettingDirectory.DataView.Refresh();
         }
 
@@ -106,7 +114,6 @@ namespace cloudimgWinform.bean
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    throw;
                 }
                 
             }

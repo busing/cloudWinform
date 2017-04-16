@@ -195,5 +195,15 @@ namespace cloudimgWinform
         {
             this.notifyIcon_DoubleClick(sender,e);
         }
+
+        private void tasksDataView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void SettingDirectory_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
