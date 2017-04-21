@@ -33,7 +33,7 @@ namespace cloudimgWinform.utils
         public static SQLiteCommand CreateCommand(SQLiteConnection connection, string commandText, params SQLiteParameter[] commandParameters)
         {
             SQLiteCommand cmd = new SQLiteCommand(commandText, connection);
-            if (commandParameters.Length > 0)
+            if (commandParameters !=null && commandParameters.Length > 0)
             {
                 foreach (SQLiteParameter parm in commandParameters)
                     cmd.Parameters.Add(parm);

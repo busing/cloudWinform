@@ -7,13 +7,16 @@ using System.Threading.Tasks;
 using cloudimgWinform.utils.oss;
 using System.Threading;
 using static cloudimgWinform.SettingDirectory;
+using cloudimgWinform.dao;
+using System.Windows.Forms;
 
 namespace cloudimgWinform.bean
 {
     class UploadTask 
     {
         //上传任务数据
-        public static IList<UploadTask> tasks = new BindingList<UploadTask>();
+        public static IList<UploadTask> tasks= new BindingList<UploadTask>();
+        public int id { get; set; }
         //文件名
         public String name { get; set; }
         //文件路径
@@ -43,25 +46,28 @@ namespace cloudimgWinform.bean
             this.size = size;
         }
 
+        public UploadTask()
+        {
+        }
+
         //上传到oss
         public void upload()
         {
-            this.status = 4;
-            SettingDirectory.DataView.Refresh();
+            UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD, this.id);
             String key = getKey();
             Console.WriteLine("upload file to {0}", key);
             try
             {
                 OSSUpload.UploadMultipart(OSSConfig.Buket, this.path, key);
-                this.status = 5;
+                UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_SUCCESS, this.id);
             }
             catch (Exception e)
             {
-                this.status = 6;
-                Console.WriteLine(e.Message);
+                UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_FAIL, this.id);
             }
-            SettingDirectory.DataView.Refresh();
+
         }
+
 
         //获取文件key（路径：cloud/{date}/{uuid}_{yyyyMMddffffff}/{name}）
         public String getKey()
@@ -77,14 +83,8 @@ namespace cloudimgWinform.bean
         //获取可上传的文件
         public static UploadTask getNewToUpload()
         {
-            foreach (UploadTask ut in tasks)
-            {
-                if (ut.status == 2)
-                {
-                    return ut;
-                }
-            }
-            return null;
+            UploadTask ut= UploadTaskDao.getByStatus(Dictionary.STATUS_TRANSFORM_SUCCESS);
+            return ut;
         }
 
 
@@ -99,10 +99,6 @@ namespace cloudimgWinform.bean
                 try
                 {
                     Thread.Sleep(3000);
-                    if (tasks.Count == 0)
-                    {
-                        continue;
-                    }
                     UploadTask ut = getNewToUpload();
                     if (ut == null)
                     {

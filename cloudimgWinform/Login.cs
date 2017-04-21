@@ -16,7 +16,6 @@ using System.Xml.Linq;
 using System.Runtime.Remoting.Contexts;
 using Newtonsoft.Json.Linq;
 using wrapperTest;
-using System.Collections.Generic;
 using cloudimgWinform.dao;
 
 namespace cloudimgWinform
