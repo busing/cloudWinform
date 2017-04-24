@@ -22,7 +22,6 @@ namespace cloudimgWinform
 {
     public partial class login : Form
     {
-        private static String api="http://cloudapi.terrydr.com/";
         public login()
         {
             InitializeComponent();
@@ -44,25 +43,25 @@ namespace cloudimgWinform
 
         private void loginbtn_Click(object sender, EventArgs e)
         {
-            openSettingDirectory();
-            //String userName = this.userName.Text;
-            //String password = this.password.Text;
-            //if (Utils.isNotEmpty(userName) && Utils.isNotEmpty(password))
-            //{
-            //    User user=httpLogin(userName,password);
-            //    if (user == null)
-            //    {
-            //        MessageBox.Show("登录失败");
-            //        return;
-            //    }
-            //    Console.WriteLine(user.userName);
-            //    openSettingDirectory();
-            //}
-            //else
-            //{
-            //    MessageBox.Show("请输入账号和密码");
+            //openSettingDirectory();
+            String userName = this.userName.Text;
+            String password = this.password.Text;
+            if (Utils.isNotEmpty(userName) && Utils.isNotEmpty(password))
+            {
+                User user = httpLogin(userName, password);
+                if (user == null)
+                {
+                    MessageBox.Show("登录失败");
+                    return;
+                }
+                User.loginUser = user;
+                openSettingDirectory();
+            }
+            else
+            {
+                MessageBox.Show("请输入账号和密码");
 
-            //}
+            }
         }
 
         private User httpLogin(String userName, String password)
@@ -71,7 +70,7 @@ namespace cloudimgWinform
             byte[] result = Encoding.Default.GetBytes(password.Trim());
             byte[] output = md5.ComputeHash(result);
             String passwordMd5 = BitConverter.ToString(output).Replace("-", "").ToLower();
-            String loginUrl = api + "account/login?userName=" + userName + "&password=" + passwordMd5;
+            String loginUrl = Dictionary.API + "account/login?userName=" + userName + "&password=" + passwordMd5;
             HttpWebResponse response=HttpHelper.CreateGetHttpResponse(loginUrl, 5000, "", null);
             StreamReader  responseReader = new StreamReader(response.GetResponseStream());
             String responseData = responseReader.ReadToEnd();

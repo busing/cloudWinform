@@ -26,13 +26,15 @@ namespace cloudimgWinform
             DataView.AutoGenerateColumns = false;
             Control.CheckForIllegalCrossThreadCalls = false;
 
-            //UploadTask.tasks= UploadTaskDao.query();
-            //tasksDataView.DataSource = UploadTask.tasks;
             bindDataSource();
 
             Thread uploadThread =new Thread (UploadTask.MonitorUpload);
             uploadThread.IsBackground = true;
             uploadThread.Start();
+
+            Thread transformThread = new Thread(UploadTask.MonitorTransform);
+            transformThread.IsBackground = true;
+            transformThread.Start();
 
             Thread refreshThread = new Thread(refresh);
             refreshThread.IsBackground = true;
@@ -84,7 +86,13 @@ namespace cloudimgWinform
             OpenFileDialog fileDialog = new OpenFileDialog();
             fileDialog.Multiselect = true;
             fileDialog.Title = "请选择文件";
-            fileDialog.Filter = "所有文件(*.*)|*.*";
+            StringBuilder filter = new StringBuilder();
+            foreach (String s in Dictionary.SLIDE_FILE_SUFFIX)
+            {
+                filter.Append("*.").Append(s).Append(";");
+            }
+            filter.Remove(filter.Length-1,1);
+            fileDialog.Filter = "虚拟切片|"+ filter.ToString();
             if (fileDialog.ShowDialog() == DialogResult.OK)
             {
                 string[] files = fileDialog.FileNames;
@@ -98,7 +106,7 @@ namespace cloudimgWinform
             {
                 FileInfo fileInfo = new FileInfo(file);
                 String fileName = file.Substring(file.LastIndexOf("\\") + 1);
-                UploadTask t = new UploadTask(fileName, file, 2, fileInfo.Length);
+                UploadTask t = new UploadTask(fileName, file, Dictionary.STATUS_WAIT, fileInfo.Length);
                 UploadTaskDao.addTask(t);
             }
             refreshOnce();
@@ -208,6 +216,21 @@ namespace cloudimgWinform
         //文件拖入
         private void SettingDirectory_DragDrop(object sender, DragEventArgs e)
         {
+            e.Data.GetData(DataFormats.FileDrop).ToString();
+            List<String> files = new List<String>();
+            foreach (String file in (String[])e.Data.GetData(DataFormats.FileDrop))
+            {
+                foreach (String stuff in Dictionary.SLIDE_FILE_SUFFIX)
+                {
+                    if (file.EndsWith("."+stuff))
+                    {
+                        files.Add(file);
+                        break;
+                    }
+                }
+            }
+            String[] fileArr = files.ToArray();
+            pushUpload(fileArr);
 
         }
 
