@@ -32,10 +32,14 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingDirectory));
             this.choose = new System.Windows.Forms.Button();
             this.tasksDataView = new System.Windows.Forms.DataGridView();
-            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.delTask = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.delTasks = new System.Windows.Forms.ToolStripMenuItem();
+            this.label1 = new System.Windows.Forms.Label();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.cleanTask = new System.Windows.Forms.LinkLabel();
+            this.cleanAllTask = new System.Windows.Forms.LinkLabel();
+            this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.path = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.scan_rate = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -43,10 +47,7 @@
             this.height = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.resolution = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.label1 = new System.Windows.Forms.Label();
-            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.cleanTask = new System.Windows.Forms.LinkLabel();
-            this.cleanAllTask = new System.Windows.Forms.LinkLabel();
+            this.retry = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.tasksDataView)).BeginInit();
             this.delTask.SuspendLayout();
             this.SuspendLayout();
@@ -64,6 +65,7 @@
             // tasksDataView
             // 
             this.tasksDataView.AllowUserToAddRows = false;
+            this.tasksDataView.AllowUserToResizeRows = false;
             this.tasksDataView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.tasksDataView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
@@ -78,6 +80,7 @@
             this.tasksDataView.Location = new System.Drawing.Point(12, 41);
             this.tasksDataView.Name = "tasksDataView";
             this.tasksDataView.ReadOnly = true;
+            this.tasksDataView.RowHeadersVisible = false;
             this.tasksDataView.RowTemplate.Height = 23;
             this.tasksDataView.Size = new System.Drawing.Size(941, 345);
             this.tasksDataView.TabIndex = 4;
@@ -85,105 +88,22 @@
             this.tasksDataView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView1_CellFormatting);
             this.tasksDataView.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.tasksDataView_CellMouseDown);
             // 
-            // id
-            // 
-            this.id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.id.DataPropertyName = "id";
-            this.id.HeaderText = "id";
-            this.id.MaxInputLength = 20;
-            this.id.Name = "id";
-            this.id.ReadOnly = true;
-            this.id.Visible = false;
-            // 
-            // name
-            // 
-            this.name.ContextMenuStrip = this.delTask;
-            this.name.DataPropertyName = "name";
-            this.name.HeaderText = "文件名";
-            this.name.Name = "name";
-            this.name.ReadOnly = true;
-            // 
             // delTask
             // 
             this.delTask.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.delTasks});
+            this.delTasks,
+            this.retry});
             this.delTask.Name = "delTask";
-            this.delTask.Size = new System.Drawing.Size(125, 26);
+            this.delTask.Size = new System.Drawing.Size(153, 70);
             this.delTask.Text = "删除";
             this.delTask.Opening += new System.ComponentModel.CancelEventHandler(this.delTask_Opening);
             // 
             // delTasks
             // 
             this.delTasks.Name = "delTasks";
-            this.delTasks.Size = new System.Drawing.Size(124, 22);
-            this.delTasks.Text = "删除任务";
+            this.delTasks.Size = new System.Drawing.Size(152, 22);
+            this.delTasks.Text = "删除";
             this.delTasks.Click += new System.EventHandler(this.delTasks_Click);
-            // 
-            // path
-            // 
-            this.path.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.path.ContextMenuStrip = this.delTask;
-            this.path.DataPropertyName = "path";
-            this.path.HeaderText = "路径";
-            this.path.Name = "path";
-            this.path.ReadOnly = true;
-            // 
-            // fileSize
-            // 
-            this.fileSize.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.fileSize.ContextMenuStrip = this.delTask;
-            this.fileSize.DataPropertyName = "size";
-            this.fileSize.HeaderText = "文件大小";
-            this.fileSize.Name = "fileSize";
-            this.fileSize.ReadOnly = true;
-            this.fileSize.Width = 78;
-            // 
-            // scan_rate
-            // 
-            this.scan_rate.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.scan_rate.DataPropertyName = "scan_rate";
-            this.scan_rate.HeaderText = "扫描倍率";
-            this.scan_rate.Name = "scan_rate";
-            this.scan_rate.ReadOnly = true;
-            this.scan_rate.Width = 78;
-            // 
-            // width
-            // 
-            this.width.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.width.ContextMenuStrip = this.delTask;
-            this.width.DataPropertyName = "width";
-            this.width.HeaderText = "宽度(px)";
-            this.width.Name = "width";
-            this.width.ReadOnly = true;
-            this.width.Width = 78;
-            // 
-            // height
-            // 
-            this.height.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.height.DataPropertyName = "height";
-            this.height.HeaderText = "高度(px)";
-            this.height.Name = "height";
-            this.height.ReadOnly = true;
-            this.height.Width = 78;
-            // 
-            // resolution
-            // 
-            this.resolution.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.resolution.DataPropertyName = "resolution";
-            this.resolution.HeaderText = "比例尺";
-            this.resolution.Name = "resolution";
-            this.resolution.ReadOnly = true;
-            this.resolution.Width = 66;
-            // 
-            // status
-            // 
-            this.status.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
-            this.status.ContextMenuStrip = this.delTask;
-            this.status.DataPropertyName = "status";
-            this.status.HeaderText = "状态";
-            this.status.Name = "status";
-            this.status.ReadOnly = true;
-            this.status.Width = 54;
             // 
             // label1
             // 
@@ -224,6 +144,101 @@
             this.cleanAllTask.Text = "清除所有";
             this.cleanAllTask.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.cleanAllTask_LinkClicked);
             // 
+            // id
+            // 
+            this.id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.id.DataPropertyName = "id";
+            this.id.HeaderText = "id";
+            this.id.MaxInputLength = 20;
+            this.id.Name = "id";
+            this.id.ReadOnly = true;
+            this.id.Visible = false;
+            this.id.Width = 23;
+            // 
+            // name
+            // 
+            this.name.ContextMenuStrip = this.delTask;
+            this.name.DataPropertyName = "name";
+            this.name.HeaderText = "文件名";
+            this.name.Name = "name";
+            this.name.ReadOnly = true;
+            // 
+            // path
+            // 
+            this.path.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.path.ContextMenuStrip = this.delTask;
+            this.path.DataPropertyName = "path";
+            this.path.HeaderText = "路径";
+            this.path.Name = "path";
+            this.path.ReadOnly = true;
+            // 
+            // fileSize
+            // 
+            this.fileSize.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.fileSize.ContextMenuStrip = this.delTask;
+            this.fileSize.DataPropertyName = "size";
+            this.fileSize.HeaderText = "文件大小";
+            this.fileSize.Name = "fileSize";
+            this.fileSize.ReadOnly = true;
+            this.fileSize.Width = 78;
+            // 
+            // scan_rate
+            // 
+            this.scan_rate.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.scan_rate.ContextMenuStrip = this.delTask;
+            this.scan_rate.DataPropertyName = "scan_rate";
+            this.scan_rate.HeaderText = "扫描倍率";
+            this.scan_rate.Name = "scan_rate";
+            this.scan_rate.ReadOnly = true;
+            this.scan_rate.Width = 78;
+            // 
+            // width
+            // 
+            this.width.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.width.ContextMenuStrip = this.delTask;
+            this.width.DataPropertyName = "width";
+            this.width.HeaderText = "宽度(px)";
+            this.width.Name = "width";
+            this.width.ReadOnly = true;
+            this.width.Width = 78;
+            // 
+            // height
+            // 
+            this.height.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.height.ContextMenuStrip = this.delTask;
+            this.height.DataPropertyName = "height";
+            this.height.HeaderText = "高度(px)";
+            this.height.Name = "height";
+            this.height.ReadOnly = true;
+            this.height.Width = 78;
+            // 
+            // resolution
+            // 
+            this.resolution.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.resolution.ContextMenuStrip = this.delTask;
+            this.resolution.DataPropertyName = "resolution";
+            this.resolution.HeaderText = "比例尺";
+            this.resolution.Name = "resolution";
+            this.resolution.ReadOnly = true;
+            this.resolution.Width = 66;
+            // 
+            // status
+            // 
+            this.status.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.status.ContextMenuStrip = this.delTask;
+            this.status.DataPropertyName = "status";
+            this.status.HeaderText = "状态";
+            this.status.Name = "status";
+            this.status.ReadOnly = true;
+            this.status.Width = 90;
+            // 
+            // retry
+            // 
+            this.retry.Name = "retry";
+            this.retry.Size = new System.Drawing.Size(152, 22);
+            this.retry.Text = "重试";
+            this.retry.Click += new System.EventHandler(this.retry_Click);
+            // 
             // SettingDirectory
             // 
             this.AllowDrop = true;
@@ -235,6 +250,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tasksDataView);
             this.Controls.Add(this.choose);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "SettingDirectory";
@@ -271,5 +287,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn height;
         private System.Windows.Forms.DataGridViewTextBoxColumn resolution;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
+        private System.Windows.Forms.ToolStripMenuItem retry;
     }
 }

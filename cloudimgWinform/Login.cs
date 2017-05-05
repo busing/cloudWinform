@@ -15,7 +15,6 @@ using System.IO;
 using System.Xml.Linq;
 using System.Runtime.Remoting.Contexts;
 using Newtonsoft.Json.Linq;
-using wrapperTest;
 using cloudimgWinform.dao;
 
 namespace cloudimgWinform
@@ -25,42 +24,36 @@ namespace cloudimgWinform
         public login()
         {
             InitializeComponent();
-            //test link dll
-            //string[] inputDir = { "S:\\data\\swsi\\jiaoda", "asdasd", "qweqwe" };
-            //int lala = 1;
-            //wrapperTest.wrapperTestClass test = new wrapperTest.wrapperTestClass();
-            //List<String> inputDirList = new List<string>();
-            //inputDirList.Add("asd");
-            //// 实际效果：lala+=1;
-            //lala = test.testPlus1(lala);
-            //// 实际效果：inputDir[0] += "SO WHAT";
-            //string strOut = test.testString(inputDir[0]);
-            //// 实际效果：对于每个输入string，将会输出两个string，内容分别为输入+"so what" 和 输入+"SO WHAT"
-            //List<string> outputDirList = test.testStrings(inputDirList);
-            //Console.WriteLine(outputDirList);
-            //end of test
         }
 
         private void loginbtn_Click(object sender, EventArgs e)
         {
             //openSettingDirectory();
-            String userName = this.userName.Text;
-            String password = this.password.Text;
-            if (Utils.isNotEmpty(userName) && Utils.isNotEmpty(password))
+            try
             {
-                User user = httpLogin(userName, password);
-                if (user == null)
+                String userName = this.userName.Text;
+                String password = this.password.Text;
+                if (Utils.isNotEmpty(userName) && Utils.isNotEmpty(password))
                 {
-                    MessageBox.Show("登录失败");
-                    return;
+                    User user = httpLogin(userName, password);
+                    if (user == null)
+                    {
+                        MessageBox.Show("登录失败");
+                        return;
+                    }
+                    User.loginUser = user;
+                    openSettingDirectory();
                 }
-                User.loginUser = user;
-                openSettingDirectory();
-            }
-            else
-            {
-                MessageBox.Show("请输入账号和密码");
+                else
+                {
+                    MessageBox.Show("请输入账号和密码");
 
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("登录失败");
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -99,7 +92,10 @@ namespace cloudimgWinform
         private void login_Load(object sender, EventArgs e)
         {
             UploadTaskDao.initDataBase();
-
+            //init version file
+            File.Delete(Dictionary.VERSION_FILE);
+            FileUtils.AppendFile(Dictionary.VERSION_FILE, "app:" + Dictionary.APP_VERSION+"\n");
+            FileUtils.AppendFile(Dictionary.VERSION_FILE, "data:" + Dictionary.DATA_VERSION);
         }
     }
 }

@@ -28,14 +28,22 @@ namespace cloudimgWinform
 
             bindDataSource();
 
-            Thread uploadThread =new Thread (UploadTask.MonitorUpload);
-            uploadThread.IsBackground = true;
-            uploadThread.Start();
-
+            //扫描转化
             Thread transformThread = new Thread(UploadTask.MonitorTransform);
             transformThread.IsBackground = true;
             transformThread.Start();
 
+            //扫描上传
+            Thread uploadThread = new Thread(UploadTask.MonitorUpload);
+            uploadThread.IsBackground = true;
+            uploadThread.Start();
+
+            //扫描提交
+            Thread submitThread = new Thread(UploadTask.MonitorSubmit);
+            submitThread.IsBackground = true;
+            submitThread.Start();
+
+            //刷新界面gridview数据
             Thread refreshThread = new Thread(refresh);
             refreshThread.IsBackground = true;
             refreshThread.Start();
@@ -46,16 +54,37 @@ namespace cloudimgWinform
 
         public void bindDataSource()
         {
-            int rowindex = tasksDataView.FirstDisplayedScrollingRowIndex;
-            SQLiteDataAdapter da = new SQLiteDataAdapter("select * from t_uploadtask order by id", UploadTaskDao.connection);
-            DataSet ds = new DataSet();
-            da.Fill(ds);
-            DataTable dt = ds.Tables[0];
-            tasksDataView.DataSource = dt;
-            if (rowindex > 0)
+            try
             {
-                tasksDataView.FirstDisplayedScrollingRowIndex = rowindex;
+                int row = 1;
+                int col = 1;
+                if (tasksDataView.CurrentCell != null)
+                {
+                    row = tasksDataView.CurrentCell.RowIndex;
+                    col = tasksDataView.CurrentCell.ColumnIndex;
+                }
+
+                int rowindex = tasksDataView.FirstDisplayedScrollingRowIndex;
+                SQLiteDataAdapter da = new SQLiteDataAdapter("select * from t_uploadtask order by id", UploadTaskDao.connection);
+                DataSet ds = new DataSet();
+                da.Fill(ds);
+                DataTable dt = ds.Tables[0];
+                tasksDataView.DataSource = dt;
+                if (rowindex > 0)
+                {
+                    tasksDataView.FirstDisplayedScrollingRowIndex = rowindex;
+                }
+                if (row < tasksDataView.RowCount)
+                {
+                    DataGridViewCell cell = tasksDataView[col, row];
+                    tasksDataView.CurrentCell = cell;
+                }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            
         }
 
         public void refresh()
@@ -70,12 +99,14 @@ namespace cloudimgWinform
 
         private void refreshOnce()
         {
+          
             UploadTask.tasks = UploadTaskDao.query();
             if (tasksDataView != null)
             {
                 tasksDataView.BeginInvoke(new MethodInvoker(() =>
                     bindDataSource()
                  ));
+               
             }
         }
 
@@ -105,12 +136,23 @@ namespace cloudimgWinform
             foreach (String file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
+                String md5 = FileUtils.GetMD5HashFromFile(file);
                 String fileName = file.Substring(file.LastIndexOf("\\") + 1);
-                UploadTask t = new UploadTask(fileName, file, Dictionary.STATUS_WAIT, fileInfo.Length);
-                UploadTaskDao.addTask(t);
+
+                if (UploadTaskDao.getByMd5(md5) == null)
+                {
+                    UploadTask t = new UploadTask(fileName, file, Dictionary.STATUS_WAIT, fileInfo.Length, md5);
+                    UploadTaskDao.addTask(t);
+                }
+                else
+                {
+                    MessageBox.Show("文件"+ fileName + "已存在队列中");
+                }
+                
             }
             refreshOnce();
         }
+
 
 
         //数据字段格式化
@@ -124,13 +166,24 @@ namespace cloudimgWinform
                        e.Value = "等待中";
                        break;
                     case Dictionary.STATUS_TRANSFORM:
-                        e.Value = "转化中";
+                        String percentStr = "";
+                        if (UploadTask.TDR == null)
+                        {
+
+                        }
+                        else
+                        {
+                            int percent = (int)(UploadTask.TDR.getProgress() * 100);
+                            percentStr = "(" + (percent > 100 ? "100" : percent + "") + "%)";
+                        }
+                        e.Value = "转化中 " + percentStr;
                         break;
                     case Dictionary.STATUS_TRANSFORM_SUCCESS:
                         e.Value = "转化成功";
                         break;
                     case Dictionary.STATUS_TRANSFORM_FAIL:
                         e.Value = "转化失败";
+                        e.CellStyle.ForeColor = Color.Red;
                         break;
                     case Dictionary.STATUS_UPLOAD:
                         e.Value = "上传中";
@@ -139,9 +192,19 @@ namespace cloudimgWinform
                         e.Value = "上传成功";
                         break;
                     case Dictionary.STATUS_UPLOAD_FAIL:
+                        e.CellStyle.ForeColor = Color.Red;
                         e.Value = "上传失败";
                         break;
+                    case Dictionary.STATUS_SUBMIT_SUCCESS:
+                        e.Value = "提交成功";
+                        e.CellStyle.ForeColor = Color.Green;
+                        break;
+                    case Dictionary.STATUS_SUBMIT_FAIL:
+                        e.Value = "提交失败";
+                        e.CellStyle.ForeColor = Color.Red;
+                        break;
                 }
+
             }
             //文件大小
             else if (this.tasksDataView.Columns["fileSize"].Index == e.ColumnIndex && e.RowIndex >= 0)
@@ -169,6 +232,7 @@ namespace cloudimgWinform
                 }
                 
             }
+
         }
 
         //删除任务
@@ -176,10 +240,22 @@ namespace cloudimgWinform
         {
             int row = tasksDataView.CurrentCell.RowIndex;
             int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
-            String name = tasksDataView.CurrentRow.Cells[0].Value.ToString();
+            int status = int.Parse(tasksDataView.CurrentRow.Cells[8].Value.ToString());
+            String name = tasksDataView.CurrentRow.Cells[1].Value.ToString();
             DialogResult dr = MessageBox.Show("确定删除"+ name+"吗？", "删除任务", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             if (dr == DialogResult.OK)
             {
+                //当前数据正在转化，停止转化
+                if (status == Dictionary.STATUS_TRANSFORM && UploadTask.TDR.isProcessing())
+                {
+                    UploadTask.TDR.stopProcessing();
+                    UploadTask.TDR = null;
+                }
+                //当前数据正在上传，停止上传
+                else if (status == Dictionary.STATUS_UPLOAD)
+                {
+
+                }
                 UploadTaskDao.delTask(id);
             }
             refreshOnce();
@@ -194,7 +270,8 @@ namespace cloudimgWinform
                 if (e.Button == System.Windows.Forms.MouseButtons.Right)
                 {
                     tasksDataView.ClearSelection();
-                    tasksDataView.Rows[e.RowIndex].Cells[e.ColumnIndex].Selected = true;
+                    DataGridViewCell cell = tasksDataView[e.ColumnIndex, e.RowIndex];
+                    tasksDataView.CurrentCell = cell;
                 }
             }
         }
@@ -272,7 +349,17 @@ namespace cloudimgWinform
 
         private void delTask_Opening(object sender, CancelEventArgs e)
         {
-
+            int row = tasksDataView.CurrentCell.RowIndex;
+            int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
+            int status=int.Parse(tasksDataView.CurrentRow.Cells[8].Value.ToString());
+            if (status != Dictionary.STATUS_TRANSFORM_FAIL && status != Dictionary.STATUS_UPLOAD_FAIL && status != Dictionary.STATUS_SUBMIT_FAIL)
+            {
+                retry.Enabled = false;
+            }
+            else
+            {
+                retry.Enabled = true;
+            }
         }
 
         private void SettingDirectory_FormClosing(object sender, FormClosingEventArgs e)
@@ -295,7 +382,7 @@ namespace cloudimgWinform
 
         private void cleanTask_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            UploadTaskDao.delTaskByStatus(Dictionary.STATUS_UPLOAD_SUCCESS);
+            UploadTaskDao.delTaskByStatus(Dictionary.STATUS_SUBMIT_SUCCESS);
             refreshOnce();
         }
 
@@ -306,6 +393,27 @@ namespace cloudimgWinform
             {
                 UploadTaskDao.delAllTask();
             }
+            refreshOnce();
+        }
+
+        private void retry_Click(object sender, EventArgs e)
+        {
+            int row = tasksDataView.CurrentCell.RowIndex;
+            int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
+            int status = int.Parse(tasksDataView.CurrentRow.Cells[8].Value.ToString());
+            switch (status)
+            {
+                case Dictionary.STATUS_TRANSFORM_FAIL:
+                    status = Dictionary.STATUS_WAIT;
+                    break;
+                case Dictionary.STATUS_UPLOAD_FAIL:
+                    status = Dictionary.STATUS_TRANSFORM_SUCCESS;
+                    break;
+                case Dictionary.STATUS_SUBMIT_FAIL:
+                    status = Dictionary.STATUS_UPLOAD_SUCCESS;
+                    break;
+            }
+            UploadTaskDao.updateStatus(status,id);
             refreshOnce();
         }
     }

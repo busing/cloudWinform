@@ -75,8 +75,8 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Aliyun.OSS, Version=2.4.0.0, Culture=neutral, PublicKeyToken=0ad4175f0dac0b9b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Aliyun.OSS.SDK.2.4.0\lib\Aliyun.OSS.dll</HintPath>
+    <Reference Include="Aliyun.OSS, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Aliyun.OSS.SDK.2.5.0\lib\Aliyun.OSS.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
@@ -86,9 +86,6 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="sampleWrapperProj">
-      <HintPath>..\..\..\测试接口\Debug\sampleWrapperProj.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -111,9 +108,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="tdrConverterLibCppCLI, Version=1.0.6323.17151, Culture=neutral, processorArchitecture=AMD64">
+    <Reference Include="tdrConverterLibCppCLI, Version=1.0.6325.26459, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\MyDownloads\dll\tdrConverterLibCppCLI.dll</HintPath>
+      <HintPath>..\..\TDrUploaderDotNetLib\x64\tdrConverterLibCppCLI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -135,7 +132,12 @@
     <Compile Include="SettingDirectory.Designer.cs">
       <DependentUpon>SettingDirectory.cs</DependentUpon>
     </Compile>
+    <Compile Include="transform\ImageTransform.cs" />
+    <Compile Include="transform\sub\CommonTransform.cs" />
+    <Compile Include="transform\sub\WSITransform.cs" />
+    <Compile Include="utils\FileUtils.cs" />
     <Compile Include="utils\HttpHelper.cs" />
+    <Compile Include="utils\ImageUtils.cs" />
     <Compile Include="utils\OSSUtil.cs" />
     <Compile Include="utils\SQLiteHelper.cs" />
     <Compile Include="utils\Utils.cs" />

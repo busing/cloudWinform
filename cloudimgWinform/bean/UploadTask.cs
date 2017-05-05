@@ -14,6 +14,9 @@ using System.IO;
 using System.Net;
 using cloudimgWinform.utils;
 using Newtonsoft.Json.Linq;
+using cloudimgWinform.transform;
+using Aliyun.OSS;
+using Aliyun.OSS.Util;
 
 namespace cloudimgWinform.bean
 {
@@ -21,6 +24,8 @@ namespace cloudimgWinform.bean
     {
         //上传任务数据
         public static IList<UploadTask> tasks = new BindingList<UploadTask>();
+
+        public static tdrConverter TDR = null;
         public int id { get; set; }
         //文件名
         public String name { get; set; }
@@ -47,6 +52,7 @@ namespace cloudimgWinform.bean
 
         //文件大小
         public long size { get; set; }
+        public String md5 { get; set; }
         public String associatedName
         {
             get
@@ -56,14 +62,7 @@ namespace cloudimgWinform.bean
             set { }
         }
         //标签图
-        public String associatedImgPath
-        {
-            get
-            {
-                return this.convertPath + name.Substring(0, name.LastIndexOf(".")) + "_associated.jpg";
-            }
-            set { }
-        }
+        public String associatedImgPath { get; set; }
         //缩略图
         public String previewName
         {
@@ -92,12 +91,14 @@ namespace cloudimgWinform.bean
         //0 待转化  1已转化 2已上传
         public int status { get; set; }
 
-        public UploadTask(String name,String path,int status,long size)
+
+        public UploadTask(String name,String path,int status,long size,String md5)
         {
             this.name = name;
             this.path = path;
             this.status = status;
             this.size = size;
+            this.md5 = md5;
         }
 
         public UploadTask()
@@ -128,10 +129,16 @@ namespace cloudimgWinform.bean
                     OSSUpload.UploadMultipart(OSSConfig.Buket, this.tdrPath, key + this.tdrName);
                     File.Delete(this.tdrPath);
                 }
+                //普通图片上传
+                if (FileUtils.isCommonImage(this.path) &&  File.Exists(this.path))
+                {
+                    OSSUpload.UploadMultipart(OSSConfig.Buket, this.path, key + this.name);
+                }
                 UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_SUCCESS, this.id);
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_FAIL, this.id);
             }
 
@@ -145,24 +152,9 @@ namespace cloudimgWinform.bean
         {
             try
             {
-                tdrConverter tdr = new tdrConverter();
-                String date = DateTime.Now.ToString("yyyy-MM-dd");
-                String uuid = Guid.NewGuid().ToString();
-                StringBuilder key = new StringBuilder(Dictionary.UserHome).Append(Dictionary.AppHome)
-                    .Append(uuid).Append("_").Append(DateTime.Now.ToString("yyyyMMddfffffff"))
-                    .Append("\\");
-                if (File.Exists(key.ToString()) == false)//如果不存在就创建file文件夹
-                {
-                    Directory.CreateDirectory(key.ToString());
-                }
-                String name = this.name.Substring(0, this.name.LastIndexOf("."));
-                this.convertPath = key.ToString();
                 UploadTaskDao.updateStatus(Dictionary.STATUS_TRANSFORM, this.id);
-                tdr.convertScannerFileToTdr(this.path, this.tdrPath, this.previewPath, this.associatedImgPath);
-                this.height = tdr.getMetadataHeight();
-                this.width = tdr.getMetadataWidth();
-                this.resolution = Math.Round(tdr.getMetadataMicronPerPixel(), 2, MidpointRounding.AwayFromZero) ;
-                this.scanRate = tdr.getMetadataMagnification();
+                ImageTransform transform = ImageTransform.createTransform(this);
+                transform.startTransform();
                 this.status = Dictionary.STATUS_TRANSFORM_SUCCESS;
                 this.uploadPath = getKey();
                 UploadTaskDao.updateInfo(this);
@@ -176,17 +168,15 @@ namespace cloudimgWinform.bean
         }
 
         //提交图片信息到云图
-        private bool submitImage()
+        private void submitImage()
         {
             try
             {
                 String url = Dictionary.API + "image";
                 IDictionary<String, String> imageParams = new Dictionary<String, String>();
-                imageParams.Add("associatedImgPath", this.uploadPath + this.associatedName);
+                imageParams.Add("associatedImgPath", Utils.isNotEmpty(this.associatedImgPath)?this.uploadPath + this.associatedName:"");
                 imageParams.Add("previewPath", this.uploadPath + this.previewName);
                 imageParams.Add("filePath", this.uploadPath + this.name);
-                imageParams.Add("associatedImgPath", this.associatedImgPath);
-                imageParams.Add("associatedImgPath", this.associatedImgPath);
                 imageParams.Add("scanRate", this.scanRate+"");
                 imageParams.Add("width", this.width + "");
                 imageParams.Add("height", this.height + "");
@@ -196,16 +186,19 @@ namespace cloudimgWinform.bean
                 StreamReader responseReader = new StreamReader(response.GetResponseStream());
                 String responseData = responseReader.ReadToEnd();
                 JObject jsonObj = JObject.Parse(responseData);
-                if (jsonObj["responseCode"].Equals("0"))
+                if (Utils.isNotEmpty(jsonObj["returnObject"].ToString()))
                 {
-                    return true;
+                    UploadTaskDao.updateStatus(Dictionary.STATUS_SUBMIT_SUCCESS, this.id);
                 }
-                return false;
+                else
+                {
+                    UploadTaskDao.updateStatus(Dictionary.STATUS_SUBMIT_FAIL, this.id);
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return false;
+                UploadTaskDao.updateStatus(Dictionary.STATUS_SUBMIT_FAIL, this.id);
             }
         }
 
@@ -221,13 +214,7 @@ namespace cloudimgWinform.bean
             return key.ToString();
         }
 
-        //获取可上传的文件
-        public static UploadTask getNewToUpload()
-        {
-            UploadTask ut= UploadTaskDao.getByStatus(Dictionary.STATUS_TRANSFORM_SUCCESS);
-            return ut;
-        }
-
+    
 
         /**
          * 监控任务数据，并执行分片上传
@@ -240,13 +227,16 @@ namespace cloudimgWinform.bean
                 try
                 {
                     Thread.Sleep(3000);
-                    UploadTask ut = getNewToUpload();
-                    if (ut == null)
+                    List<UploadTask> ut = UploadTaskDao.getByStatus(Dictionary.STATUS_TRANSFORM_SUCCESS);
+                    if (ut.Count==0)
                     {
                         continue;
                     }
-                    ut.upload();
-                    Console.WriteLine("{0} uploaded ",ut.name);
+                    foreach (UploadTask task in ut)
+                    {
+                        task.upload();
+                        Console.WriteLine("{0} uploaded ", task.name);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -265,13 +255,44 @@ namespace cloudimgWinform.bean
                 try
                 {
                     Thread.Sleep(3000);
-                    UploadTask ut = UploadTaskDao.getByStatus(Dictionary.STATUS_WAIT);
-                    if (ut == null)
+                    List<UploadTask> ut = UploadTaskDao.getByStatus(Dictionary.STATUS_WAIT);
+                    if (ut.Count==0)
                     {
                         continue;
                     }
-                    ut.transform();
-                    Console.WriteLine("{0} transformed ", ut.name);
+                    foreach (UploadTask task in ut)
+                    {
+                        task.transform();
+                        Console.WriteLine("{0} transformed ", task.name);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+            }
+        }
+
+        public static void MonitorSubmit()
+        {
+            while (true)
+            {
+                Console.WriteLine("scan file to submit");
+                try
+                {
+                    Thread.Sleep(3000);
+                    List<UploadTask> ut = UploadTaskDao.getByStatus(Dictionary.STATUS_UPLOAD_SUCCESS);
+                    if (ut.Count==0)
+                    {
+                        continue;
+                    }
+                    foreach (UploadTask task in ut)
+                    {
+                        task.submitImage();
+                        Console.WriteLine("{0} submit ", task.name);
+                    }
+                    
                 }
                 catch (Exception e)
                 {

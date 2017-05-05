@@ -8,11 +8,16 @@ namespace cloudimgWinform.bean
 {
     class Dictionary
     {
-        public static String API = "http://cloudapi.terrydr.com/";
+        public static String APP_VERSION = "1.0.0";
+        public static String DATA_VERSION = "1.0.0";
 
-        public static String[] SLIDE_FILE_SUFFIX = new String[]{"svs", "tif" , "vms" , "vmu" , "ndpi" , "scn" , "mrxs" , "tiff" , "svslide" , "bif"};
-        public static String UserHome = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        public static String AppHome = "\\terrydr\\cloudimg\\";
+        public static String API = "http://betacloudapi.terrydr.com/";
+
+        public static String[] SLIDE_FILE_SUFFIX = new String[]{"svs", "tif" , "vms" , "vmu" , "ndpi" , "scn" , "mrxs" , "tiff" , "svslide" , "bif","jpg","jpeg","png","svg"};
+        public static String USER_HOME = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        public static String APP_HOME = "\\terrydr\\cloudimg\\";
+        public static String VERSION_FILE = USER_HOME + APP_HOME + "version";
+
 
 
         //等待中

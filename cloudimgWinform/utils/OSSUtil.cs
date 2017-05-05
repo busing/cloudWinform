@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Aliyun.OSS;
 using System.IO;
 using System.Threading;
+using Aliyun.OSS.Common;
 
 namespace cloudimgWinform.utils.oss
 {
@@ -371,7 +372,6 @@ namespace cloudimgWinform.utils.oss
             {
                 completeMultipartUploadRequest.PartETags.Add(partETag);
             }
-
             return client.CompleteMultipartUpload(completeMultipartUploadRequest);
         }
     }
