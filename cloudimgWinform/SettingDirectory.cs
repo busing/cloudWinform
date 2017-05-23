@@ -34,9 +34,9 @@ namespace cloudimgWinform
             transformThread.Start();
 
             //扫描上传
-            Thread uploadThread = new Thread(UploadTask.MonitorUpload);
-            uploadThread.IsBackground = true;
-            uploadThread.Start();
+            //Thread uploadThread = new Thread(UploadTask.MonitorUpload);
+            //uploadThread.IsBackground = true;
+            //uploadThread.Start();
 
             //扫描提交
             Thread submitThread = new Thread(UploadTask.MonitorSubmit);
@@ -136,19 +136,9 @@ namespace cloudimgWinform
             foreach (String file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
-                String md5 = FileUtils.GetMD5HashFromFile(file);
                 String fileName = file.Substring(file.LastIndexOf("\\") + 1);
-
-                if (UploadTaskDao.getByMd5(md5) == null)
-                {
-                    UploadTask t = new UploadTask(fileName, file, Dictionary.STATUS_WAIT, fileInfo.Length, md5);
-                    UploadTaskDao.addTask(t);
-                }
-                else
-                {
-                    MessageBox.Show("文件"+ fileName + "已存在队列中");
-                }
-                
+                UploadTask t = new UploadTask(fileName, file, Dictionary.STATUS_WAIT, fileInfo.Length, "");
+                UploadTaskDao.addTask(t);
             }
             refreshOnce();
         }
@@ -186,7 +176,8 @@ namespace cloudimgWinform
                         e.CellStyle.ForeColor = Color.Red;
                         break;
                     case Dictionary.STATUS_UPLOAD:
-                        e.Value = "上传中";
+                        String progress = Utils.isNotEmpty(Progress.currentProgress.taskName) ? Progress.currentProgress.taskName+" " + Progress.currentProgress.progress+"%" : "";
+                        e.Value = "上传"+ progress;
                         break;
                     case Dictionary.STATUS_UPLOAD_SUCCESS:
                         e.Value = "上传成功";

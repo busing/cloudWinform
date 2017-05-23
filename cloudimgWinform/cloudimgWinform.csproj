@@ -115,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="bean\Dictionary.cs" />
+    <Compile Include="bean\Progress.cs" />
     <Compile Include="bean\UploadTask.cs" />
     <Compile Include="bean\User.cs" />
     <Compile Include="dao\UploadTaskDao.cs" />

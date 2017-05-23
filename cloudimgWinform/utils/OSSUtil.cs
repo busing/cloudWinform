@@ -7,6 +7,9 @@ using Aliyun.OSS;
 using System.IO;
 using System.Threading;
 using Aliyun.OSS.Common;
+using Aliyun.OSS.Util;
+using cloudimgWinform.bean;
+using System.Windows.Forms;
 
 namespace cloudimgWinform.utils.oss
 {
@@ -20,7 +23,7 @@ namespace cloudimgWinform.utils.oss
 
         public static string UploadPath = "cloud/images/";
 
-        public static string Buket = "terrydr-hd-dev";
+        public static string Buket = "terrydr-hd";
     }
 
     public class OSSUpload
@@ -30,6 +33,7 @@ namespace cloudimgWinform.utils.oss
         static string endpoint = OSSConfig.Endpoint;
         static OssClient client = new OssClient(endpoint, accessKeyId, accessKeySecret);
         static int partSize = 50 * 1024 * 1024;
+        static AutoResetEvent _event = new AutoResetEvent(false);
 
         public class UploadPartContext
         {
@@ -92,7 +96,7 @@ namespace cloudimgWinform.utils.oss
         {
             var uploadId = InitiateMultipartUpload(bucketName, key);
             var partETags = UploadParts(bucketName, key, fileToUpload, uploadId, partSize);
-            CompleteUploadPart(bucketName, key, uploadId, partETags);
+            CompleteMultipartUploadResult request=CompleteUploadPart(bucketName, key, uploadId, partETags);
             Console.WriteLine("Multipart put object:{0} succeeded", key);
         }
 
@@ -178,7 +182,7 @@ namespace cloudimgWinform.utils.oss
                         PartSize = size,
                         PartNumber = i + 1
                     };
-
+                    request.StreamTransferProgress += streamProgressCallback;
                     var result = client.UploadPart(request);
 
                     partETags.Add(result.PartETag);
@@ -366,13 +370,122 @@ namespace cloudimgWinform.utils.oss
         private static CompleteMultipartUploadResult CompleteUploadPart(String bucketName, String objectName,
             String uploadId, List<PartETag> partETags)
         {
+            var metadata = BuildCallbackMetadata("","");
             var completeMultipartUploadRequest =
-                new CompleteMultipartUploadRequest(bucketName, objectName, uploadId);
+                new CompleteMultipartUploadRequest(bucketName, objectName, uploadId)
+                {
+                    Metadata = metadata
+                };
             foreach (var partETag in partETags)
             {
                 completeMultipartUploadRequest.PartETags.Add(partETag);
             }
             return client.CompleteMultipartUpload(completeMultipartUploadRequest);
         }
+
+
+        private static ObjectMetadata BuildCallbackMetadata(string callbackUrl, string callbackBody)
+        {
+            string callbackHeaderBuilder = new CallbackHeaderBuilder("","").Build();
+            string CallbackVariableHeaderBuilder = new CallbackVariableHeaderBuilder().Build();
+
+            var metadata = new ObjectMetadata();
+            metadata.AddHeader(HttpHeaders.Callback, callbackHeaderBuilder);
+            metadata.AddHeader(HttpHeaders.CallbackVar, CallbackVariableHeaderBuilder);
+            return metadata;
+        }
+
+        public static void streamProgressCallback(object sender, StreamTransferProgressArgs args)
+        {
+            MessageBox.Show("invoke");
+            System.Console.WriteLine("ProgressCallback - TotalBytes:{0}, TransferredBytes:{1}, IncrementTransferred:{2}",
+                args.TotalBytes, args.TransferredBytes, args.IncrementTransferred);
+            double precent = (double)args.TransferredBytes / args.TotalBytes;
+            Progress.currentProgress.progress = (int)Math.Floor(precent * 100);
+        }
+
+
+
+        public static void MultipartUploadProgress(string bucketName)
+        {
+            const string key = "MultipartUploadProgress";
+
+            try
+            {
+                // 初始化分片上传任务
+                var initRequest = new InitiateMultipartUploadRequest(bucketName, key);
+                var initResult = client.InitiateMultipartUpload(initRequest);
+
+                // 设置每块为 1M
+                const int partSize = 1024 * 1024 * 1;
+                var partFile = new FileInfo("E:\\wsi\\Leica-1.scn");
+                // 计算分块数目
+                var partCount = CalculatePartCount(partFile.Length, partSize);
+
+                // 新建一个List保存每个分块上传后的ETag和PartNumber
+                var partETags = new List<PartETag>();
+                //upload the file
+                using (var fs = new FileStream(partFile.FullName, FileMode.Open))
+                {
+                    for (var i = 0; i < partCount; i++)
+                    {
+                        // 跳到每个分块的开头
+                        long skipBytes = partSize * i;
+                        fs.Position = skipBytes;
+
+                        // 计算每个分块的大小
+                        var size = partSize < partFile.Length - skipBytes ? partSize : partFile.Length - skipBytes;
+
+                        // 创建UploadPartRequest，上传分块
+                        var uploadPartRequest = new UploadPartRequest(bucketName, key, initResult.UploadId)
+                        {
+                            InputStream = fs,
+                            PartSize = size,
+                            PartNumber = (i + 1)
+                        };
+                        uploadPartRequest.StreamTransferProgress += streamProgressCallback;
+                        var uploadPartResult = client.UploadPart(uploadPartRequest);
+
+
+                        // 将返回的PartETag保存到List中。
+                        partETags.Add(uploadPartResult.PartETag);
+                    }
+                }
+
+                // 提交上传任务
+                var completeRequest = new CompleteMultipartUploadRequest(bucketName, key, initResult.UploadId);
+                foreach (var partETag in partETags)
+                {
+                    completeRequest.PartETags.Add(partETag);
+                }
+                client.CompleteMultipartUpload(completeRequest);
+
+                Console.WriteLine("Multipart upload object:{0} succeeded", key);
+            }
+            catch (OssException ex)
+            {
+                Console.WriteLine("Failed with error code: {0}; Error info: {1}. \nRequestID:{2}\tHostID:{3}",
+                    ex.ErrorCode, ex.Message, ex.RequestId, ex.HostId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed with error info: {0}", ex.Message);
+            }
+        }
+
+
+        private static int CalculatePartCount(long totalSize, int partSize)
+        {
+            var partCount = (int)(totalSize / partSize);
+            if (totalSize % partSize != 0)
+            {
+                partCount++;
+            }
+            return partCount;
+        }
+
+
     }
+
+
 }

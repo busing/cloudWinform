@@ -203,5 +203,16 @@ namespace cloudimgWinform.dao
             Console.WriteLine("修改数据状态" + result + "条");
             return result > 0 ? true : false;
         }
+
+        public static bool updateMd5(int id,String md5)
+        {
+            String sql = "update t_uploadtask set md5=@md5 where id=@id";
+            SQLiteParameter p1 = SQLiteHelper.CreateParameter("md5", DbType.String, md5);
+            SQLiteParameter p2 = SQLiteHelper.CreateParameter("id", DbType.Int64, id);
+            SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1,p2 });
+            int result = command.ExecuteNonQuery();
+            Console.WriteLine("修改数据状态" + result + "条");
+            return result > 0 ? true : false;
+        }
     }
 }

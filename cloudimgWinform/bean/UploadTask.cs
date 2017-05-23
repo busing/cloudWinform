@@ -22,6 +22,9 @@ namespace cloudimgWinform.bean
 {
     class UploadTask
     {
+
+
+       
         //上传任务数据
         public static IList<UploadTask> tasks = new BindingList<UploadTask>();
 
@@ -114,26 +117,41 @@ namespace cloudimgWinform.bean
             Console.WriteLine("upload file to {0}", key);
             try
             {
+                OSSUpload.MultipartUploadProgress(OSSConfig.Buket);
                 if (File.Exists(this.associatedImgPath))
                 {
+                    Progress.currentProgress.taskName = "标签图";
                     OSSUpload.UploadMultipart(OSSConfig.Buket, this.associatedImgPath, key + this.associatedName);
-                    File.Delete(this.associatedImgPath);
+                    if (Dictionary.AUTO_DEL_CONVERTFILE)
+                    {
+                        File.Delete(this.associatedImgPath);
+                    }
                 }
                 if (File.Exists(this.previewPath))
                 {
+                    Progress.currentProgress.taskName = "缩略图";
                     OSSUpload.UploadMultipart(OSSConfig.Buket, this.previewPath, key + this.previewName);
-                    File.Delete(this.previewPath);
+                    if (Dictionary.AUTO_DEL_CONVERTFILE)
+                    {
+                        File.Delete(this.previewPath);
+                    }
                 }
                 if (File.Exists(this.tdrPath))
                 {
+                    Progress.currentProgress.taskName = "扫描图";
                     OSSUpload.UploadMultipart(OSSConfig.Buket, this.tdrPath, key + this.tdrName);
-                    File.Delete(this.tdrPath);
+                    if (Dictionary.AUTO_DEL_CONVERTFILE)
+                    {
+                        File.Delete(this.tdrPath);
+                    }
                 }
                 //普通图片上传
                 if (FileUtils.isCommonImage(this.path) &&  File.Exists(this.path))
                 {
+                    Progress.currentProgress.taskName = "原图";
                     OSSUpload.UploadMultipart(OSSConfig.Buket, this.path, key + this.name);
                 }
+                Progress.currentProgress.taskName = "";
                 UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_SUCCESS, this.id);
             }
             catch (Exception e)
@@ -152,6 +170,8 @@ namespace cloudimgWinform.bean
         {
             try
             {
+                String md5 = FileUtils.GetMD5HashFromFile(this.path);
+                UploadTaskDao.updateMd5(this.id, md5);
                 UploadTaskDao.updateStatus(Dictionary.STATUS_TRANSFORM, this.id);
                 ImageTransform transform = ImageTransform.createTransform(this);
                 transform.startTransform();
