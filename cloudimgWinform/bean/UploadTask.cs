@@ -117,7 +117,6 @@ namespace cloudimgWinform.bean
             Console.WriteLine("upload file to {0}", key);
             try
             {
-                OSSUpload.MultipartUploadProgress(OSSConfig.Buket);
                 if (File.Exists(this.associatedImgPath))
                 {
                     Progress.currentProgress.taskName = "标签图";
@@ -196,7 +195,7 @@ namespace cloudimgWinform.bean
                 IDictionary<String, String> imageParams = new Dictionary<String, String>();
                 imageParams.Add("associatedImgPath", Utils.isNotEmpty(this.associatedImgPath)?this.uploadPath + this.associatedName:"");
                 imageParams.Add("previewPath", this.uploadPath + this.previewName);
-                imageParams.Add("filePath", this.uploadPath + this.name);
+                imageParams.Add("filePath", this.uploadPath + this.tdrName);
                 imageParams.Add("scanRate", this.scanRate+"");
                 imageParams.Add("width", this.width + "");
                 imageParams.Add("height", this.height + "");

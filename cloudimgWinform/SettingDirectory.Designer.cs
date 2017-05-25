@@ -34,11 +34,13 @@
             this.tasksDataView = new System.Windows.Forms.DataGridView();
             this.delTask = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.delTasks = new System.Windows.Forms.ToolStripMenuItem();
+            this.retry = new System.Windows.Forms.ToolStripMenuItem();
             this.label1 = new System.Windows.Forms.Label();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.cleanTask = new System.Windows.Forms.LinkLabel();
             this.cleanAllTask = new System.Windows.Forms.LinkLabel();
             this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.index = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.path = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -47,19 +49,24 @@
             this.height = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.resolution = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.retry = new System.Windows.Forms.ToolStripMenuItem();
+            this.linkcloud = new System.Windows.Forms.LinkLabel();
+            this.uploadtip = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.tasksDataView)).BeginInit();
             this.delTask.SuspendLayout();
             this.SuspendLayout();
             // 
             // choose
             // 
-            this.choose.Location = new System.Drawing.Point(12, 12);
+            this.choose.BackColor = System.Drawing.Color.DeepSkyBlue;
+            this.choose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.choose.ForeColor = System.Drawing.Color.Transparent;
+            this.choose.Location = new System.Drawing.Point(19, 12);
             this.choose.Name = "choose";
             this.choose.Size = new System.Drawing.Size(75, 23);
             this.choose.TabIndex = 2;
             this.choose.Text = "上传文件";
-            this.choose.UseVisualStyleBackColor = true;
+            this.uploadtip.SetToolTip(this.choose, "可上传svs,tif,vms,vmu,ndpi,scn,mrxs,tiff,svslide,bif,jpg,jpeg,png,svg格式图片");
+            this.choose.UseVisualStyleBackColor = false;
             this.choose.Click += new System.EventHandler(this.choose_Click);
             // 
             // tasksDataView
@@ -69,6 +76,7 @@
             this.tasksDataView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.tasksDataView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.id,
+            this.index,
             this.name,
             this.path,
             this.fileSize,
@@ -77,16 +85,17 @@
             this.height,
             this.resolution,
             this.status});
-            this.tasksDataView.Location = new System.Drawing.Point(12, 41);
+            this.tasksDataView.Location = new System.Drawing.Point(19, 41);
             this.tasksDataView.Name = "tasksDataView";
             this.tasksDataView.ReadOnly = true;
             this.tasksDataView.RowHeadersVisible = false;
             this.tasksDataView.RowTemplate.Height = 23;
-            this.tasksDataView.Size = new System.Drawing.Size(941, 345);
+            this.tasksDataView.Size = new System.Drawing.Size(949, 350);
             this.tasksDataView.TabIndex = 4;
             this.tasksDataView.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.tasksDataView_CellContentClick);
             this.tasksDataView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridView1_CellFormatting);
             this.tasksDataView.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.tasksDataView_CellMouseDown);
+            this.tasksDataView.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.tasksDataView_RowPostPaint);
             // 
             // delTask
             // 
@@ -94,25 +103,33 @@
             this.delTasks,
             this.retry});
             this.delTask.Name = "delTask";
-            this.delTask.Size = new System.Drawing.Size(153, 70);
+            this.delTask.Size = new System.Drawing.Size(101, 48);
             this.delTask.Text = "删除";
             this.delTask.Opening += new System.ComponentModel.CancelEventHandler(this.delTask_Opening);
             // 
             // delTasks
             // 
             this.delTasks.Name = "delTasks";
-            this.delTasks.Size = new System.Drawing.Size(152, 22);
+            this.delTasks.Size = new System.Drawing.Size(100, 22);
             this.delTasks.Text = "删除";
             this.delTasks.Click += new System.EventHandler(this.delTasks_Click);
+            // 
+            // retry
+            // 
+            this.retry.Name = "retry";
+            this.retry.Size = new System.Drawing.Size(100, 22);
+            this.retry.Text = "重试";
+            this.retry.Click += new System.EventHandler(this.retry_Click);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(91, 18);
+            this.label1.Location = new System.Drawing.Point(97, 18);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(113, 12);
             this.label1.TabIndex = 5;
             this.label1.Text = "选择或拖动文件上传";
+            this.uploadtip.SetToolTip(this.label1, "可上传svs,tif,vms,vmu,ndpi,scn,mrxs,tiff,svslide,bif,jpg,jpeg,png,svg格式图片");
             // 
             // notifyIcon
             // 
@@ -125,7 +142,7 @@
             // cleanTask
             // 
             this.cleanTask.AutoSize = true;
-            this.cleanTask.Location = new System.Drawing.Point(888, 23);
+            this.cleanTask.Location = new System.Drawing.Point(900, 23);
             this.cleanTask.Name = "cleanTask";
             this.cleanTask.Size = new System.Drawing.Size(65, 12);
             this.cleanTask.TabIndex = 6;
@@ -136,7 +153,7 @@
             // cleanAllTask
             // 
             this.cleanAllTask.AutoSize = true;
-            this.cleanAllTask.Location = new System.Drawing.Point(807, 23);
+            this.cleanAllTask.Location = new System.Drawing.Point(819, 23);
             this.cleanAllTask.Name = "cleanAllTask";
             this.cleanAllTask.Size = new System.Drawing.Size(53, 12);
             this.cleanAllTask.TabIndex = 7;
@@ -154,6 +171,13 @@
             this.id.ReadOnly = true;
             this.id.Visible = false;
             this.id.Width = 23;
+            // 
+            // index
+            // 
+            this.index.HeaderText = "序号";
+            this.index.Name = "index";
+            this.index.ReadOnly = true;
+            this.index.Width = 60;
             // 
             // name
             // 
@@ -232,19 +256,26 @@
             this.status.ReadOnly = true;
             this.status.Width = 90;
             // 
-            // retry
+            // linkcloud
             // 
-            this.retry.Name = "retry";
-            this.retry.Size = new System.Drawing.Size(152, 22);
-            this.retry.Text = "重试";
-            this.retry.Click += new System.EventHandler(this.retry_Click);
+            this.linkcloud.AutoSize = true;
+            this.linkcloud.Location = new System.Drawing.Point(417, 396);
+            this.linkcloud.Name = "linkcloud";
+            this.linkcloud.Size = new System.Drawing.Size(149, 12);
+            this.linkcloud.TabIndex = 8;
+            this.linkcloud.TabStop = true;
+            this.linkcloud.Text = "http://cloud.terrydr.com";
+            this.linkcloud.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // SettingDirectory
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(965, 408);
+            this.BackColor = System.Drawing.Color.White;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.ClientSize = new System.Drawing.Size(985, 414);
+            this.Controls.Add(this.linkcloud);
             this.Controls.Add(this.cleanAllTask);
             this.Controls.Add(this.cleanTask);
             this.Controls.Add(this.label1);
@@ -254,8 +285,10 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "SettingDirectory";
+            this.Opacity = 0.95D;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "云图-上传文件";
+            this.uploadtip.SetToolTip(this, "可上传svs,tif,vms,vmu,ndpi,scn,mrxs,tiff,svslide,bif,jpg,jpeg,png,svg格式图片\r\n");
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingDirectory_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SettingDirectory_FormClosed);
             this.Load += new System.EventHandler(this.SettingDirectory_Load);
@@ -278,7 +311,9 @@
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.LinkLabel cleanTask;
         private System.Windows.Forms.LinkLabel cleanAllTask;
+        private System.Windows.Forms.ToolStripMenuItem retry;
         private System.Windows.Forms.DataGridViewTextBoxColumn id;
+        private System.Windows.Forms.DataGridViewTextBoxColumn index;
         private System.Windows.Forms.DataGridViewTextBoxColumn name;
         private System.Windows.Forms.DataGridViewTextBoxColumn path;
         private System.Windows.Forms.DataGridViewTextBoxColumn fileSize;
@@ -287,6 +322,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn height;
         private System.Windows.Forms.DataGridViewTextBoxColumn resolution;
         private System.Windows.Forms.DataGridViewTextBoxColumn status;
-        private System.Windows.Forms.ToolStripMenuItem retry;
+        private System.Windows.Forms.LinkLabel linkcloud;
+        private System.Windows.Forms.ToolTip uploadtip;
     }
 }

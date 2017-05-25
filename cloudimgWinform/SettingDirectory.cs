@@ -19,6 +19,9 @@ namespace cloudimgWinform
     public partial class SettingDirectory : Form
     {
         public static DataGridView DataView;
+        private static Thread transformThread;
+        private static Thread uploadThread;
+        private static Thread submitThread;
         public SettingDirectory()
         {
             InitializeComponent();
@@ -29,17 +32,17 @@ namespace cloudimgWinform
             bindDataSource();
 
             //扫描转化
-            Thread transformThread = new Thread(UploadTask.MonitorTransform);
+            transformThread = new Thread(UploadTask.MonitorTransform);
             transformThread.IsBackground = true;
             transformThread.Start();
 
             //扫描上传
-            //Thread uploadThread = new Thread(UploadTask.MonitorUpload);
-            //uploadThread.IsBackground = true;
-            //uploadThread.Start();
+            uploadThread = new Thread(UploadTask.MonitorUpload);
+            uploadThread.IsBackground = true;
+            uploadThread.Start();
 
             //扫描提交
-            Thread submitThread = new Thread(UploadTask.MonitorSubmit);
+            submitThread = new Thread(UploadTask.MonitorSubmit);
             submitThread.IsBackground = true;
             submitThread.Start();
 
@@ -70,14 +73,15 @@ namespace cloudimgWinform
                 da.Fill(ds);
                 DataTable dt = ds.Tables[0];
                 tasksDataView.DataSource = dt;
-                if (rowindex > 0)
-                {
-                    tasksDataView.FirstDisplayedScrollingRowIndex = rowindex;
-                }
+               
                 if (row < tasksDataView.RowCount)
                 {
                     DataGridViewCell cell = tasksDataView[col, row];
                     tasksDataView.CurrentCell = cell;
+                }
+                if (rowindex > 0)
+                {
+                    tasksDataView.FirstDisplayedScrollingRowIndex = rowindex;
                 }
             }
             catch (Exception e)
@@ -176,7 +180,7 @@ namespace cloudimgWinform
                         e.CellStyle.ForeColor = Color.Red;
                         break;
                     case Dictionary.STATUS_UPLOAD:
-                        String progress = Utils.isNotEmpty(Progress.currentProgress.taskName) ? Progress.currentProgress.taskName+" " + Progress.currentProgress.progress+"%" : "";
+                        String progress = Utils.isNotEmpty(Progress.currentProgress.taskName) ? Progress.currentProgress.taskName: "";
                         e.Value = "上传"+ progress;
                         break;
                     case Dictionary.STATUS_UPLOAD_SUCCESS:
@@ -245,7 +249,8 @@ namespace cloudimgWinform
                 //当前数据正在上传，停止上传
                 else if (status == Dictionary.STATUS_UPLOAD)
                 {
-
+                    uploadThread.Abort();
+                    uploadThread.Start();
                 }
                 UploadTaskDao.delTask(id);
             }
@@ -342,7 +347,7 @@ namespace cloudimgWinform
         {
             int row = tasksDataView.CurrentCell.RowIndex;
             int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
-            int status=int.Parse(tasksDataView.CurrentRow.Cells[8].Value.ToString());
+            int status=int.Parse(tasksDataView.CurrentRow.Cells[9].Value.ToString());
             if (status != Dictionary.STATUS_TRANSFORM_FAIL && status != Dictionary.STATUS_UPLOAD_FAIL && status != Dictionary.STATUS_SUBMIT_FAIL)
             {
                 retry.Enabled = false;
@@ -383,6 +388,8 @@ namespace cloudimgWinform
             if (dr == DialogResult.OK)
             {
                 UploadTaskDao.delAllTask();
+                uploadThread.Abort();
+                uploadThread.Start();
             }
             refreshOnce();
         }
@@ -391,7 +398,7 @@ namespace cloudimgWinform
         {
             int row = tasksDataView.CurrentCell.RowIndex;
             int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
-            int status = int.Parse(tasksDataView.CurrentRow.Cells[8].Value.ToString());
+            int status = int.Parse(tasksDataView.CurrentRow.Cells[9].Value.ToString());
             switch (status)
             {
                 case Dictionary.STATUS_TRANSFORM_FAIL:
@@ -406,6 +413,19 @@ namespace cloudimgWinform
             }
             UploadTaskDao.updateStatus(status,id);
             refreshOnce();
+        }
+
+        private void tasksDataView_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+        {
+            foreach (DataGridViewRow row in tasksDataView.Rows)
+            {
+                row.Cells[1].Value = row.Index + 1;
+            }
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://cloud.terrydr.com");
         }
     }
 }

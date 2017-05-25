@@ -12,7 +12,7 @@ namespace cloudimgWinform.bean
         public static String DATA_VERSION = "1.0.0";
         public static bool AUTO_DEL_CONVERTFILE = false;
 
-        public static String API = "http://cloudapi.terrydr.com/";
+        public static String API = "http://betacloudapi.terrydr.com/";
 
         public static String[] SLIDE_FILE_SUFFIX = new String[]{"svs", "tif" , "vms" , "vmu" , "ndpi" , "scn" , "mrxs" , "tiff" , "svslide" , "bif","jpg","jpeg","png","svg"};
         //public static String USER_HOME = System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);

@@ -28,12 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(login));
             this.userName = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.password = new System.Windows.Forms.TextBox();
             this.loginbtn = new System.Windows.Forms.Button();
+            this.linkcloud = new System.Windows.Forms.LinkLabel();
+            this.logintip = new System.Windows.Forms.ToolTip(this.components);
             this.SuspendLayout();
             // 
             // userName
@@ -73,19 +76,36 @@
             // 
             // loginbtn
             // 
-            this.loginbtn.Location = new System.Drawing.Point(131, 140);
+            this.loginbtn.BackColor = System.Drawing.Color.DeepSkyBlue;
+            this.loginbtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.loginbtn.ForeColor = System.Drawing.Color.White;
+            this.loginbtn.Location = new System.Drawing.Point(133, 139);
             this.loginbtn.Name = "loginbtn";
-            this.loginbtn.Size = new System.Drawing.Size(75, 23);
+            this.loginbtn.Size = new System.Drawing.Size(85, 30);
             this.loginbtn.TabIndex = 4;
             this.loginbtn.Text = "登录";
-            this.loginbtn.UseVisualStyleBackColor = true;
+            this.logintip.SetToolTip(this.loginbtn, "使用泰瑞云图账号登录");
+            this.loginbtn.UseVisualStyleBackColor = false;
             this.loginbtn.Click += new System.EventHandler(this.loginbtn_Click);
+            // 
+            // linkcloud
+            // 
+            this.linkcloud.AutoSize = true;
+            this.linkcloud.Location = new System.Drawing.Point(97, 181);
+            this.linkcloud.Name = "linkcloud";
+            this.linkcloud.Size = new System.Drawing.Size(149, 12);
+            this.linkcloud.TabIndex = 9;
+            this.linkcloud.TabStop = true;
+            this.linkcloud.Text = "http://cloud.terrydr.com";
+            this.linkcloud.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkcloud_LinkClicked);
             // 
             // login
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(345, 202);
+            this.Controls.Add(this.linkcloud);
             this.Controls.Add(this.loginbtn);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.password);
@@ -95,6 +115,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "login";
+            this.Opacity = 0.95D;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "泰瑞云图登录";
             this.Load += new System.EventHandler(this.login_Load);
@@ -110,6 +131,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox password;
         private System.Windows.Forms.Button loginbtn;
+        private System.Windows.Forms.LinkLabel linkcloud;
+        private System.Windows.Forms.ToolTip logintip;
     }
 }
 

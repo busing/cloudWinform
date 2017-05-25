@@ -28,7 +28,6 @@ namespace cloudimgWinform
 
         private void loginbtn_Click(object sender, EventArgs e)
         {
-            //openSettingDirectory();
             try
             {
                 String userName = this.userName.Text;
@@ -96,6 +95,11 @@ namespace cloudimgWinform
             File.Delete(Dictionary.VERSION_FILE);
             FileUtils.AppendFile(Dictionary.VERSION_FILE, "app:" + Dictionary.APP_VERSION+"\n");
             FileUtils.AppendFile(Dictionary.VERSION_FILE, "data:" + Dictionary.DATA_VERSION);
+        }
+
+        private void linkcloud_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://cloud.terrydr.com");
         }
     }
 }
