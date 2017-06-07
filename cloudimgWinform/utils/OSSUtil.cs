@@ -23,7 +23,7 @@ namespace cloudimgWinform.utils.oss
 
         public static string UploadPath = "cloud/images/";
 
-        public static string Buket = "terrydr-hd";
+        public static string Buket = "terrydr-hd-test";
     }
 
     public class OSSUpload

@@ -68,7 +68,8 @@ namespace cloudimgWinform
                 }
 
                 int rowindex = tasksDataView.FirstDisplayedScrollingRowIndex;
-                SQLiteDataAdapter da = new SQLiteDataAdapter("select * from t_uploadtask order by id", UploadTaskDao.connection);
+                SQLiteParameter p1 = SQLiteHelper.CreateParameter("user_id", DbType.Int32, User.loginUser.userId);
+                SQLiteDataAdapter da = new SQLiteDataAdapter("select * from t_uploadtask where user_id="+User.loginUser.userId+" order by id", UploadTaskDao.connection);
                 DataSet ds = new DataSet();
                 da.Fill(ds);
                 DataTable dt = ds.Tables[0];
@@ -155,7 +156,7 @@ namespace cloudimgWinform
             //状态
             if (this.tasksDataView.Columns["status"].Index == e.ColumnIndex && e.RowIndex >= 0)
             {
-                switch (e.Value){
+                switch (int.Parse(e.Value.ToString())){
                     case Dictionary.STATUS_WAIT:
                        e.Value = "等待中";
                        break;

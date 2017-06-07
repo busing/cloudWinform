@@ -191,21 +191,29 @@ namespace cloudimgWinform.bean
         {
             try
             {
-                String url = Dictionary.API + "image";
+                String url = Dictionary.API + "images";
                 IDictionary<String, String> imageParams = new Dictionary<String, String>();
-                imageParams.Add("associatedImgPath", Utils.isNotEmpty(this.associatedImgPath)?this.uploadPath + this.associatedName:"");
+                imageParams.Add("fileName", this.name);
+                if (FileUtils.isCommonImage(this.path))
+                {
+                    imageParams.Add("filePath", this.uploadPath + this.name);
+                }
+                else
+                {
+                    imageParams.Add("filePath", this.uploadPath + this.tdrName);
+                }
+                imageParams.Add("md5", this.md5);
+                imageParams.Add("format", this.path.Substring(this.path.LastIndexOf(".")+1).ToLower());
                 imageParams.Add("previewPath", this.uploadPath + this.previewName);
-                imageParams.Add("filePath", this.uploadPath + this.tdrName);
-                imageParams.Add("scanRate", this.scanRate+"");
-                imageParams.Add("width", this.width + "");
-                imageParams.Add("height", this.height + "");
-                imageParams.Add("resolution", this.resolution + "");
-                imageParams.Add("createUserId", User.loginUser.userId + "");
-                HttpWebResponse response = HttpHelper.CreatePostHttpResponse(url, imageParams, 5000, "", new UTF8Encoding(), null);
-                StreamReader responseReader = new StreamReader(response.GetResponseStream());
-                String responseData = responseReader.ReadToEnd();
-                JObject jsonObj = JObject.Parse(responseData);
-                if (Utils.isNotEmpty(jsonObj["returnObject"].ToString()))
+                imageParams.Add("associatedImgPath", Utils.isNotEmpty(this.associatedImgPath)?this.uploadPath + this.associatedName:"");
+                imageParams.Add("scanRate", this.scanRate.ToString());
+                imageParams.Add("width", this.width.ToString());
+                imageParams.Add("height", this.height.ToString());
+                imageParams.Add("resolution", this.resolution.ToString());
+                imageParams.Add("origin", 1.ToString());
+                imageParams.Add("imageSize", (this.size/1024).ToString());
+                JObject jsonObj = HttpHelper.CreatePostHttpResponse(url, imageParams, 5000, "", new UTF8Encoding(), null);
+                if (int.Parse(jsonObj["responseCode"].ToString())==0)
                 {
                     UploadTaskDao.updateStatus(Dictionary.STATUS_SUBMIT_SUCCESS, this.id);
                 }

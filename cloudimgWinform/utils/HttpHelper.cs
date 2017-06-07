@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using System.Net.Security;
+using cloudimgWinform.bean;
+using Newtonsoft.Json.Linq;
+using System.Windows.Forms;
+using cloudimgWinform;
 
 namespace cloudimgWinform.utils
 {
@@ -21,7 +25,7 @@ namespace cloudimgWinform.utils
         /// <param name="userAgent">请求的客户端浏览器信息，可以为空</param>  
         /// <param name="cookies">随同HTTP请求发送的Cookie信息，如果不需要身份验证可以为空</param>  
         /// <returns></returns>  
-        public static HttpWebResponse CreateGetHttpResponse(string url, int? timeout, string userAgent, CookieCollection cookies)
+        public static JObject CreateGetHttpResponse(string url, int? timeout, string userAgent, CookieCollection cookies)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -43,7 +47,39 @@ namespace cloudimgWinform.utils
                 request.CookieContainer = new CookieContainer();
                 request.CookieContainer.Add(cookies);
             }
-            return request.GetResponse() as HttpWebResponse;
+            request.Headers["client_type"] = Dictionary.CLIENT_TYPE.ToString();
+            if (User.loginUser != null)
+            {
+                request.Headers["user_id"] = User.loginUser.userId.ToString();
+                request.Headers["access_token"] = User.loginUser.accessToken;
+            }
+            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+            JObject jobject = getReponseData(response);
+
+            if (loginTimeout(jobject))
+            {
+                if (User.httpLogin(User.loginUser.userName, User.loginUser.passwordMD5) == null)
+                {
+                    MessageBox.Show("登录失效，请重新登录");
+                    login loginForm = new login();
+                    loginForm.Show();
+                }
+                else {
+                    return CreateGetHttpResponse(url, timeout, userAgent, cookies);
+                }
+            }
+            return jobject;
+        }
+
+        private static bool loginTimeout(JObject jsonObj)
+        {
+            //登录失效
+            if (int.Parse(jsonObj["responseCode"].ToString()) == 21)
+            {
+                return true;
+            }
+            //没有失效
+            return false;
         }
         /// <summary>  
         /// 创建POST方式的HTTP请求  
@@ -55,7 +91,7 @@ namespace cloudimgWinform.utils
         /// <param name="requestEncoding">发送HTTP请求时所用的编码</param>  
         /// <param name="cookies">随同HTTP请求发送的Cookie信息，如果不需要身份验证可以为空</param>  
         /// <returns></returns>  
-        public static HttpWebResponse CreatePostHttpResponse(string url, IDictionary<string, string> parameters, int? timeout, string userAgent, Encoding requestEncoding, CookieCollection cookies)
+        public static JObject CreatePostHttpResponse(string url, IDictionary<string, string> parameters, int? timeout, string userAgent, Encoding requestEncoding, CookieCollection cookies)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -76,6 +112,12 @@ namespace cloudimgWinform.utils
             else
             {
                 request = WebRequest.Create(url) as HttpWebRequest;
+            }
+            request.Headers["client_type"] = Dictionary.CLIENT_TYPE.ToString();
+            if (User.loginUser != null)
+            {
+                request.Headers["user_id"] = User.loginUser.userId.ToString();
+                request.Headers["access_token"] = User.loginUser.accessToken;
             }
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
@@ -121,8 +163,37 @@ namespace cloudimgWinform.utils
                     stream.Write(data, 0, data.Length);
                 }
             }
-            return request.GetResponse() as HttpWebResponse;
+
+            HttpWebResponse response =request.GetResponse() as HttpWebResponse;
+            JObject jobject = getReponseData(response);
+            if (loginTimeout(jobject))
+            {
+                if (User.httpLogin(User.loginUser.userName, User.loginUser.passwordMD5) == null)
+                {
+                    MessageBox.Show("登录失效，请重新登录");
+                    login loginForm = new login();
+                    loginForm.Show();
+                }
+                else
+                {
+                    return CreatePostHttpResponse(url, parameters, timeout, userAgent, requestEncoding, cookies);
+                }
+            }
+            return jobject;
         }
+
+
+        private static JObject getReponseData(HttpWebResponse response)
+        {
+            StreamReader responseReader = new StreamReader(response.GetResponseStream());
+            String responseData = responseReader.ReadToEnd();
+
+            Console.WriteLine(responseData);
+            //JObject jo = XObject.Parse(Context);
+            JObject jsonObj = JObject.Parse(responseData);
+            return jsonObj;
+        }
+
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {
             return true; //总是接受  

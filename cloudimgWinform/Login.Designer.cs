@@ -45,7 +45,7 @@
             this.userName.Name = "userName";
             this.userName.Size = new System.Drawing.Size(200, 21);
             this.userName.TabIndex = 0;
-            this.userName.Text = "taiyuan";
+            this.userName.Text = "wft";
             // 
             // label1
             // 
@@ -72,7 +72,7 @@
             this.password.PasswordChar = '*';
             this.password.Size = new System.Drawing.Size(200, 21);
             this.password.TabIndex = 2;
-            this.password.Text = "admin";
+            this.password.Text = "000000";
             // 
             // loginbtn
             // 
