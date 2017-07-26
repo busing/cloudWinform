@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Net;
 using System.Xml.Linq;
@@ -46,6 +45,7 @@ namespace cloudimgWinform.bean
                 user.passwordMD5 = passwordMd5;
                 user.userName = (string)jsonObj["returnObject"]["userName"];
                 user.accessToken = (string)jsonObj["returnObject"]["accessToken"];
+                User.loginUser = user;
                 return user;
             }
             return null;

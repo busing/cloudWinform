@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
-using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
 using System.IO;
 using System.Net.Security;
@@ -11,6 +10,7 @@ using cloudimgWinform.bean;
 using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
 using cloudimgWinform;
+using System.Diagnostics;
 
 namespace cloudimgWinform.utils
 {
@@ -58,7 +58,7 @@ namespace cloudimgWinform.utils
 
             if (loginTimeout(jobject))
             {
-                if (User.httpLogin(User.loginUser.userName, User.loginUser.passwordMD5) == null)
+                if (User.httpLogin(User.loginUser.userName, User.loginUser.password) == null)
                 {
                     MessageBox.Show("登录失效，请重新登录");
                     login loginForm = new login();
@@ -168,7 +168,7 @@ namespace cloudimgWinform.utils
             JObject jobject = getReponseData(response);
             if (loginTimeout(jobject))
             {
-                if (User.httpLogin(User.loginUser.userName, User.loginUser.passwordMD5) == null)
+                if (User.httpLogin(User.loginUser.userName, User.loginUser.password) == null)
                 {
                     MessageBox.Show("登录失效，请重新登录");
                     login loginForm = new login();
@@ -188,7 +188,7 @@ namespace cloudimgWinform.utils
             StreamReader responseReader = new StreamReader(response.GetResponseStream());
             String responseData = responseReader.ReadToEnd();
 
-            Console.WriteLine(responseData);
+            Debug.WriteLine(responseData);
             //JObject jo = XObject.Parse(Context);
             JObject jsonObj = JObject.Parse(responseData);
             return jsonObj;

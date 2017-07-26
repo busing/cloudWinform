@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace cloudimgWinform.utils
 {
@@ -35,6 +34,7 @@ namespace cloudimgWinform.utils
                 {
                     sb.Append(retVal[i].ToString("x2"));
                 }
+                file.Close();
                 return sb.ToString();
             }
             catch (Exception ex)

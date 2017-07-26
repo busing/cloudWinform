@@ -5,7 +5,6 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using cloudimgWinform.bean;
 using cloudimgWinform.utils;
@@ -13,6 +12,7 @@ using cloudimgWinform.utils;
 using System.IO;
 
 using cloudimgWinform.dao;
+using System.Diagnostics;
 
 namespace cloudimgWinform
 {
@@ -49,7 +49,7 @@ namespace cloudimgWinform
             catch (Exception ex)
             {
                 MessageBox.Show("登录失败");
-                Console.WriteLine(ex.Message);
+                Debug.WriteLine(ex.Message);
             }
         }
 
@@ -63,6 +63,8 @@ namespace cloudimgWinform
 
         private void login_Load(object sender, EventArgs e)
         {
+            Dictionary.init();
+            Console.WriteLine(Dictionary.API);
             UploadTaskDao.initDataBase();
             //init version file
             File.Delete(Dictionary.VERSION_FILE);
@@ -73,6 +75,14 @@ namespace cloudimgWinform
         private void linkcloud_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start("http://cloud.terrydr.com");
+        }
+
+        private void login_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode.Equals(Keys.Enter))
+            {
+                loginbtn_Click(this.loginbtn, new EventArgs());
+            }
         }
     }
 }

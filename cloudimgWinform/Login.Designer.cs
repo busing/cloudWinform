@@ -45,7 +45,7 @@
             this.userName.Name = "userName";
             this.userName.Size = new System.Drawing.Size(200, 21);
             this.userName.TabIndex = 0;
-            this.userName.Text = "wft";
+            this.userName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.login_KeyUp);
             // 
             // label1
             // 
@@ -72,7 +72,7 @@
             this.password.PasswordChar = '*';
             this.password.Size = new System.Drawing.Size(200, 21);
             this.password.TabIndex = 2;
-            this.password.Text = "000000";
+            this.password.KeyDown += new System.Windows.Forms.KeyEventHandler(this.login_KeyUp);
             // 
             // loginbtn
             // 
@@ -113,6 +113,7 @@
             this.Controls.Add(this.userName);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "login";
             this.Opacity = 0.95D;

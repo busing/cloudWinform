@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.3
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cloudimgWinform", "cloudimgWinform\cloudimgWinform.csproj", "{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "cloudimgInstaller", "cloudimgInstaller\cloudimgInstaller.vdproj", "{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		x64|Any CPU = x64|Any CPU
+		x64|x64 = x64|x64
+		x64|x86 = x64|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -27,8 +32,93 @@ Global
 		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.Release|x64.Build.0 = Release|x64
 		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.Release|x86.ActiveCfg = Release|x86
 		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.Release|x86.Build.0 = Release|x86
+		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.x64|Any CPU.ActiveCfg = Release|Any CPU
+		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.x64|Any CPU.Build.0 = Release|Any CPU
+		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.x64|x64.ActiveCfg = Release|x64
+		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.x64|x64.Build.0 = Release|x64
+		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.x64|x86.ActiveCfg = Release|x86
+		{B49B6EDF-FEB5-4E04-A89E-03D7D7DCC851}.x64|x86.Build.0 = Release|x86
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.Debug|Any CPU.ActiveCfg = Debug
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.Debug|x64.ActiveCfg = Debug
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.Debug|x86.ActiveCfg = Debug
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.Release|Any CPU.ActiveCfg = Release
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.Release|x64.ActiveCfg = Release
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.Release|x86.ActiveCfg = Release
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.x64|Any CPU.ActiveCfg = Release
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.x64|x64.ActiveCfg = Release
+		{3BA6B9D6-A01E-4FD3-9138-705FECA4E6CB}.x64|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Default = Debug|Default
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Default = Release|Default
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		x64|Any CPU = x64|Any CPU
+		x64|Default = x64|Default
+		x64|x64 = x64|x64
+		x64|x86 = x64|x86
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Default = Debug|Default
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Default = Release|Default
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		x64|Any CPU = x64|Any CPU
+		x64|Default = x64|Default
+		x64|x64 = x64|x64
+		x64|x86 = x64|x86
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Default = Debug|Default
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Default = Release|Default
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		x64|Any CPU = x64|Any CPU
+		x64|Default = x64|Default
+		x64|x64 = x64|x64
+		x64|x86 = x64|x86
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Default = Debug|Default
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Default = Release|Default
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		x64|Any CPU = x64|Any CPU
+		x64|Default = x64|Default
+		x64|x64 = x64|x64
+		x64|x86 = x64|x86
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Default = Debug|Default
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Default = Release|Default
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		x64|Any CPU = x64|Any CPU
+		x64|Default = x64|Default
+		x64|x64 = x64|x64
+		x64|x86 = x64|x86
 	EndGlobalSection
 EndGlobal

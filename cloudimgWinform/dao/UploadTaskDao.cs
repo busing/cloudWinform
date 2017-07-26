@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace cloudimgWinform.dao
@@ -35,7 +35,7 @@ namespace cloudimgWinform.dao
                 }
                 connection = new SQLiteConnection("Data Source=" + dbFilePath + ";Version=3;");
                 connection.Open();
-                Console.WriteLine("connect success");
+                Debug.WriteLine("connect success");
                 //初始化数据表和库
                 if (first)
                 {
@@ -49,19 +49,15 @@ namespace cloudimgWinform.dao
             {
                 MessageBox.Show(e.Message);
                 Application.Exit();
-                Console.WriteLine(e.Message);
+                Debug.WriteLine(e.Message);
             }
         }
 
         //初始化状态 转化中--》待处理，上传中--》待上传
         public static void returnStatus()
         {
-            String sql = "update t_uploadtask set status=0 where status=1";
+            String sql = "update t_uploadtask set status="+Dictionary.STATUS_WAIT + " where status="+Dictionary.STATUS_UPLOAD;
             SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, null);
-            command.ExecuteNonQuery();
-
-            sql = "update t_uploadtask set status=2 where status=4";
-            command = SQLiteHelper.CreateCommand(connection, sql, null);
             command.ExecuteNonQuery();
         }
 
@@ -76,7 +72,7 @@ namespace cloudimgWinform.dao
             SQLiteParameter p6 = SQLiteHelper.CreateParameter("user_id", DbType.Int16,User.loginUser.userId);
             SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1, p2, p3, p4,p5, p6 });
             int result=command.ExecuteNonQuery();
-            Console.WriteLine("保存数据" + result + "条");
+            Debug.WriteLine("保存数据" + result + "条");
             return result>0?true:false;
         }
 
@@ -86,7 +82,7 @@ namespace cloudimgWinform.dao
             SQLiteParameter p1 = SQLiteHelper.CreateParameter("id", DbType.Int32, id);
             SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1});
             int result = command.ExecuteNonQuery();
-            Console.WriteLine("删除数据" + result + "条");
+            Debug.WriteLine("删除数据" + result + "条");
             return result > 0 ? true : false;
         }
 
@@ -97,7 +93,7 @@ namespace cloudimgWinform.dao
             SQLiteParameter p2 = SQLiteHelper.CreateParameter("user_id", DbType.Int16, User.loginUser.userId);
             SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1,p2 });
             int result = command.ExecuteNonQuery();
-            Console.WriteLine("删除数据" + result + "条");
+            Debug.WriteLine("删除数据" + result + "条");
             return result > 0 ? true : false;
         }
 
@@ -107,7 +103,7 @@ namespace cloudimgWinform.dao
             SQLiteParameter p1 = SQLiteHelper.CreateParameter("user_id", DbType.Int16, User.loginUser.userId);
             SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql,new SQLiteParameter[] { p1});
             int result = command.ExecuteNonQuery();
-            Console.WriteLine("删除数据" + result + "条");
+            Debug.WriteLine("删除数据" + result + "条");
             return result > 0 ? true : false;
         }
 
@@ -125,7 +121,7 @@ namespace cloudimgWinform.dao
                 task = readUploadTask(reader);
                 tasks.Add(task);
             }
-            Console.WriteLine("查询数据" + tasks.Count + "条");
+            Debug.WriteLine("查询数据" + tasks.Count + "条");
             return tasks;
         }
 
@@ -171,13 +167,10 @@ namespace cloudimgWinform.dao
             task.path = reader["path"].ToString();
             task.md5 = reader["md5"].ToString();
             task.uploadPath = reader["upload_path"].ToString();
-            task.associatedImgPath = reader["associated_img_path"].ToString();
-            task.convertPath = reader["convert_path"].ToString();
             task.size = int.Parse(reader["size"].ToString());
-            task.resolution = Utils.isNotEmpty(reader["resolution"].ToString()) ? float.Parse(reader["resolution"].ToString()) : 0;
-            task.scanRate = Utils.isNotEmpty(reader["scan_rate"].ToString()) ? int.Parse(reader["scan_rate"].ToString()) : 0;
             task.width = Utils.isNotEmpty(reader["width"].ToString()) ? int.Parse(reader["width"].ToString()) : 0;
             task.height = Utils.isNotEmpty(reader["height"].ToString()) ? int.Parse(reader["height"].ToString()) : 0;
+            task.md5 = reader["md5"].ToString();
             task.status = int.Parse(reader["status"].ToString());
             return task;
         }
@@ -189,37 +182,24 @@ namespace cloudimgWinform.dao
             SQLiteParameter p2 = SQLiteHelper.CreateParameter("id", DbType.Int32, id);
             SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1,p2 });
             int result = command.ExecuteNonQuery();
-            Console.WriteLine("修改数据状态" + result + "条");
+            Debug.WriteLine("修改数据状态" + result + "条");
             return result > 0 ? true : false;
         }
 
         public static bool updateInfo(UploadTask ut)
         {
-            String sql = "update t_uploadtask set upload_path=@upload_path,associated_img_path=@associated_img_path,convert_path=@convert_path,scan_rate=@scan_rate,width=@width,height=@height,resolution=@resolution,status=@status where id=@id";
+            String sql = "update t_uploadtask set upload_path=@upload_path,width=@width,height=@height,md5=@md5,status=@status where id=@id";
             SQLiteParameter p1 = SQLiteHelper.CreateParameter("upload_path", DbType.String, ut.uploadPath);
-            SQLiteParameter p2 = SQLiteHelper.CreateParameter("associated_img_path", DbType.String, ut.associatedImgPath);
-            SQLiteParameter p3 = SQLiteHelper.CreateParameter("convert_path", DbType.String, ut.convertPath);
-            SQLiteParameter p4 = SQLiteHelper.CreateParameter("scan_rate", DbType.Int32, ut.scanRate);
-            SQLiteParameter p5 = SQLiteHelper.CreateParameter("width", DbType.Int64, ut.width);
-            SQLiteParameter p6 = SQLiteHelper.CreateParameter("height", DbType.Int64, ut.height);
-            SQLiteParameter p7 = SQLiteHelper.CreateParameter("resolution", DbType.Double, ut.resolution);
-            SQLiteParameter p8 = SQLiteHelper.CreateParameter("status", DbType.Int64, ut.status);
-            SQLiteParameter p9 = SQLiteHelper.CreateParameter("id", DbType.Int64, ut.id);
-            SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1,p2, p3, p4, p5, p6, p7,p8,p9 });
+            SQLiteParameter p2 = SQLiteHelper.CreateParameter("width", DbType.Int64, ut.width);
+            SQLiteParameter p3 = SQLiteHelper.CreateParameter("height", DbType.Int64, ut.height);
+            SQLiteParameter p4 = SQLiteHelper.CreateParameter("md5", DbType.String, ut.md5);
+            SQLiteParameter p5 = SQLiteHelper.CreateParameter("status", DbType.Int64, ut.status);
+            SQLiteParameter p6 = SQLiteHelper.CreateParameter("id", DbType.Int64, ut.id);
+            SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1,p2, p3, p4, p5, p6 });
             int result = command.ExecuteNonQuery();
-            Console.WriteLine("修改数据状态" + result + "条");
+            Debug.WriteLine("修改数据状态" + result + "条");
             return result > 0 ? true : false;
         }
 
-        public static bool updateMd5(int id,String md5)
-        {
-            String sql = "update t_uploadtask set md5=@md5 where id=@id";
-            SQLiteParameter p1 = SQLiteHelper.CreateParameter("md5", DbType.String, md5);
-            SQLiteParameter p2 = SQLiteHelper.CreateParameter("id", DbType.Int64, id);
-            SQLiteCommand command = SQLiteHelper.CreateCommand(connection, sql, new SQLiteParameter[] { p1,p2 });
-            int result = command.ExecuteNonQuery();
-            Console.WriteLine("修改数据状态" + result + "条");
-            return result > 0 ? true : false;
-        }
     }
 }

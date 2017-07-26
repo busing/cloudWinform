@@ -5,7 +5,6 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using cloudimgWinform.bean;
 using System.Threading;
@@ -13,15 +12,14 @@ using System.IO;
 using cloudimgWinform.dao;
 using cloudimgWinform.utils;
 using System.Data.SQLite;
+using cloudimgWinform.form;
 
 namespace cloudimgWinform
 {
     public partial class SettingDirectory : Form
     {
         public static DataGridView DataView;
-        private static Thread transformThread;
         private static Thread uploadThread;
-        private static Thread submitThread;
         public SettingDirectory()
         {
             InitializeComponent();
@@ -31,20 +29,10 @@ namespace cloudimgWinform
 
             bindDataSource();
 
-            //扫描转化
-            transformThread = new Thread(UploadTask.MonitorTransform);
-            transformThread.IsBackground = true;
-            transformThread.Start();
-
             //扫描上传
             uploadThread = new Thread(UploadTask.MonitorUpload);
             uploadThread.IsBackground = true;
             uploadThread.Start();
-
-            //扫描提交
-            submitThread = new Thread(UploadTask.MonitorSubmit);
-            submitThread.IsBackground = true;
-            submitThread.Start();
 
             //刷新界面gridview数据
             Thread refreshThread = new Thread(refresh);
@@ -84,6 +72,7 @@ namespace cloudimgWinform
                 {
                     tasksDataView.FirstDisplayedScrollingRowIndex = rowindex;
                 }
+                tasksDataView.Focus();
             }
             catch (Exception e)
             {
@@ -138,12 +127,27 @@ namespace cloudimgWinform
 
         private void pushUpload(string[] files)
         {
+            List<String> spaceFile = new List<string>();
             foreach (String file in files)
             {
                 FileInfo fileInfo = new FileInfo(file);
                 String fileName = file.Substring(file.LastIndexOf("\\") + 1);
-                UploadTask t = new UploadTask(fileName, file, Dictionary.STATUS_WAIT, fileInfo.Length, "");
-                UploadTaskDao.addTask(t);
+                if (fileName.Contains(" "))
+                {
+                    spaceFile.Add(fileName);
+                }
+                else
+                {
+                    long fileSize = fileInfo.Length / 1024;
+                    fileSize = fileSize > 0 ? fileSize : 1;
+                    UploadTask t = new UploadTask(fileName, file, fileSize);
+                    UploadTaskDao.addTask(t);
+                }
+                
+            }
+            if (spaceFile.Count > 0)
+            {
+                MessageBox.Show(spaceFile.Count+"个文件被忽略,因为文件名包含空格");
             }
             refreshOnce();
         }
@@ -160,44 +164,17 @@ namespace cloudimgWinform
                     case Dictionary.STATUS_WAIT:
                        e.Value = "等待中";
                        break;
-                    case Dictionary.STATUS_TRANSFORM:
-                        String percentStr = "";
-                        if (UploadTask.TDR == null)
-                        {
-
-                        }
-                        else
-                        {
-                            int percent = (int)(UploadTask.TDR.getProgress() * 100);
-                            percentStr = "(" + (percent > 100 ? "100" : percent + "") + "%)";
-                        }
-                        e.Value = "转化中 " + percentStr;
-                        break;
-                    case Dictionary.STATUS_TRANSFORM_SUCCESS:
-                        e.Value = "转化成功";
-                        break;
-                    case Dictionary.STATUS_TRANSFORM_FAIL:
-                        e.Value = "转化失败";
-                        e.CellStyle.ForeColor = Color.Red;
-                        break;
                     case Dictionary.STATUS_UPLOAD:
-                        String progress = Utils.isNotEmpty(Progress.currentProgress.taskName) ? Progress.currentProgress.taskName: "";
+                        String progress = Progress.currentProgress.progress+"%";
                         e.Value = "上传"+ progress;
                         break;
                     case Dictionary.STATUS_UPLOAD_SUCCESS:
+                        e.CellStyle.ForeColor = Color.Green;
                         e.Value = "上传成功";
                         break;
                     case Dictionary.STATUS_UPLOAD_FAIL:
                         e.CellStyle.ForeColor = Color.Red;
                         e.Value = "上传失败";
-                        break;
-                    case Dictionary.STATUS_SUBMIT_SUCCESS:
-                        e.Value = "提交成功";
-                        e.CellStyle.ForeColor = Color.Green;
-                        break;
-                    case Dictionary.STATUS_SUBMIT_FAIL:
-                        e.Value = "提交失败";
-                        e.CellStyle.ForeColor = Color.Red;
                         break;
                 }
 
@@ -209,22 +186,22 @@ namespace cloudimgWinform
                 //b
                 if (fileSize / 1024==0)
                 {
-                    e.Value = e.Value+ "b";
+                    e.Value = e.Value+ "kb";
                 }
                 //kb
                 else if (fileSize / 1024>0 && fileSize /(1024*1024)==0)
                 {
-                    e.Value = ((float)fileSize / 1024).ToString("F2") + "kb";
+                    e.Value = ((float)fileSize / 1024).ToString("F2") + "M";
                 }
                 //M
                 else if (fileSize / (1024*1024) > 0 && fileSize / (1024 * 1024* 1024) == 0)
                 {
-                    e.Value = ((float)fileSize / 1024/1024).ToString("F2") + "M";
+                    e.Value = ((float)fileSize / 1024/1024).ToString("F2") + "G";
                 }
                 //G
                 else if (fileSize / (1024*1024*1024) > 0)
                 {
-                    e.Value = ((float)fileSize / 1024 / 1024/1024).ToString("F2") + "G";
+                    e.Value = ((float)fileSize / 1024 / 1024/1024).ToString("F2") + "T";
                 }
                 
             }
@@ -236,21 +213,18 @@ namespace cloudimgWinform
         {
             int row = tasksDataView.CurrentCell.RowIndex;
             int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
-            int status = int.Parse(tasksDataView.CurrentRow.Cells[8].Value.ToString());
+            int status = int.Parse(tasksDataView.CurrentRow.Cells[7].Value.ToString());
             String name = tasksDataView.CurrentRow.Cells[1].Value.ToString();
             DialogResult dr = MessageBox.Show("确定删除"+ name+"吗？", "删除任务", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             if (dr == DialogResult.OK)
             {
-                //当前数据正在转化，停止转化
-                if (status == Dictionary.STATUS_TRANSFORM && UploadTask.TDR.isProcessing())
-                {
-                    UploadTask.TDR.stopProcessing();
-                    UploadTask.TDR = null;
-                }
+               
                 //当前数据正在上传，停止上传
-                else if (status == Dictionary.STATUS_UPLOAD)
+                if (status == Dictionary.STATUS_UPLOAD)
                 {
                     uploadThread.Abort();
+                    uploadThread = new Thread(UploadTask.MonitorUpload);
+                    uploadThread.IsBackground = true;
                     uploadThread.Start();
                 }
                 UploadTaskDao.delTask(id);
@@ -296,7 +270,7 @@ namespace cloudimgWinform
             {
                 foreach (String stuff in Dictionary.SLIDE_FILE_SUFFIX)
                 {
-                    if (file.EndsWith("."+stuff))
+                    if (file.ToLower().EndsWith("."+stuff))
                     {
                         files.Add(file);
                         break;
@@ -348,8 +322,8 @@ namespace cloudimgWinform
         {
             int row = tasksDataView.CurrentCell.RowIndex;
             int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
-            int status=int.Parse(tasksDataView.CurrentRow.Cells[9].Value.ToString());
-            if (status != Dictionary.STATUS_TRANSFORM_FAIL && status != Dictionary.STATUS_UPLOAD_FAIL && status != Dictionary.STATUS_SUBMIT_FAIL)
+            int status=int.Parse(tasksDataView.CurrentRow.Cells[7].Value.ToString());
+            if (status != Dictionary.STATUS_UPLOAD_FAIL)
             {
                 retry.Enabled = false;
             }
@@ -379,7 +353,7 @@ namespace cloudimgWinform
 
         private void cleanTask_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            UploadTaskDao.delTaskByStatus(Dictionary.STATUS_SUBMIT_SUCCESS);
+            UploadTaskDao.delTaskByStatus(Dictionary.STATUS_UPLOAD_SUCCESS);
             refreshOnce();
         }
 
@@ -390,6 +364,8 @@ namespace cloudimgWinform
             {
                 UploadTaskDao.delAllTask();
                 uploadThread.Abort();
+                uploadThread = new Thread(UploadTask.MonitorUpload);
+                uploadThread.IsBackground = true;
                 uploadThread.Start();
             }
             refreshOnce();
@@ -399,20 +375,7 @@ namespace cloudimgWinform
         {
             int row = tasksDataView.CurrentCell.RowIndex;
             int id = int.Parse(tasksDataView.CurrentRow.Cells[0].Value.ToString());
-            int status = int.Parse(tasksDataView.CurrentRow.Cells[9].Value.ToString());
-            switch (status)
-            {
-                case Dictionary.STATUS_TRANSFORM_FAIL:
-                    status = Dictionary.STATUS_WAIT;
-                    break;
-                case Dictionary.STATUS_UPLOAD_FAIL:
-                    status = Dictionary.STATUS_TRANSFORM_SUCCESS;
-                    break;
-                case Dictionary.STATUS_SUBMIT_FAIL:
-                    status = Dictionary.STATUS_UPLOAD_SUCCESS;
-                    break;
-            }
-            UploadTaskDao.updateStatus(status,id);
+            UploadTaskDao.updateStatus(Dictionary.STATUS_WAIT, id);
             refreshOnce();
         }
 
