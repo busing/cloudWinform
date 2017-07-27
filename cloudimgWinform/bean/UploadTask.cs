@@ -164,8 +164,10 @@ namespace cloudimgWinform.bean
             sb.Append(this.size);
             sb.Append("&userId=");
             sb.Append(User.loginUser.userId);
-            sb.Append("&access_token=");
+            sb.Append("&accessToken=");
             sb.Append(User.loginUser.accessToken);
+            sb.Append("&clientType=");
+            sb.Append(Dictionary.CLIENT_TYPE);
             return sb.ToString();
         }
     }

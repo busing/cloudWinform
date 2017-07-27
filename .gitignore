@@ -1,3 +1,5 @@
 .vs/
 bin/
 obj/
+cloudimgInstaller/Debug
+cloudimgInstaller/Release

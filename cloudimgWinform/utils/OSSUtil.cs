@@ -100,6 +100,9 @@ namespace cloudimgWinform.utils.oss
             {
                 partCount++;
             }
+            Progress.getProgress().totalSize = fileSize;
+            Progress.getProgress().transferredSize = 0;
+
 
             var partETags = new List<PartETag>();
             using (var fs = File.Open(fileToUpload, FileMode.Open))
@@ -117,9 +120,10 @@ namespace cloudimgWinform.utils.oss
                     };
                     request.StreamTransferProgress += streamProgressCallback;
                     var result = client.UploadPart(request);
-
+                   
                     partETags.Add(result.PartETag);
                     Debug.WriteLine(String.Format("finish {0}/{1}", partETags.Count, partCount));
+                    Progress.getProgress().transferredSize += size;
                 }
             }
             return partETags;
@@ -156,8 +160,8 @@ namespace cloudimgWinform.utils.oss
 
         public static void streamProgressCallback(object sender, StreamTransferProgressArgs args)
         {
-            double precent = (double)args.TransferredBytes / args.TotalBytes;
-            Progress.currentProgress.progress = (int)Math.Floor(precent * 100);
+            double precent = (double)(Progress.getProgress().transferredSize+args.TransferredBytes) / Progress.getProgress().totalSize;
+            Progress.getProgress().progress = (int)Math.Floor(precent * 100);
         }
     }
 
