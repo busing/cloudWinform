@@ -121,7 +121,6 @@ namespace cloudimgWinform.dao
                 task = readUploadTask(reader);
                 tasks.Add(task);
             }
-            Debug.WriteLine("查询数据" + tasks.Count + "条");
             return tasks;
         }
 

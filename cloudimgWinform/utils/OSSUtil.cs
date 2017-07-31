@@ -48,103 +48,55 @@ namespace cloudimgWinform.utils.oss
         }
 
 
-        /// <summary>
-        /// 分片上传。
-        /// </summary>
-        public static CompleteMultipartUploadResult UploadMultipart(String bucketName, UploadTask uploadTask)
+        public static String PutObject(String bucketName, UploadTask uploadTask)
         {
             if (client == null)
             {
                 initOSSClient();
             }
+            string responseContent = null;
             try
             {
-                var uploadId = InitiateMultipartUpload(bucketName, uploadTask);
-                var partETags = UploadParts(bucketName, uploadTask.uploadPath, uploadTask.path, uploadId, partSize);
-                CompleteMultipartUploadResult request = CompleteUploadPart(bucketName,  uploadId, partETags, uploadTask);
-                Debug.WriteLine(String.Format("Multipart put object:{0} succeeded", uploadTask.uploadPath));
-                retryTimes = 0;
-                return request;
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e.Message);
-                if (retryTimes < 3)
+                Debug.WriteLine(Dictionary.API + "images?" + uploadTask.toCallBackString());
+                Debug.WriteLine("bucket=" + Dictionary.OSSConfig.Buket);
+                var metadata = BuildCallbackMetadata(Dictionary.API + "images?"+ uploadTask.toCallBackString(), "bucket="+ Dictionary.OSSConfig.Buket);
+                using (var fs = File.Open(uploadTask.path, FileMode.Open))
                 {
-                    retryTimes++;
+                    var putObjectRequest = new PutObjectRequest(bucketName, uploadTask.uploadPath, fs, metadata);
+                    putObjectRequest.StreamTransferProgress += streamProgressCallback;
+                    var result = client.PutObject(putObjectRequest);
+                    responseContent = GetCallbackResponse(result);
+                }
+                Console.WriteLine("Put object:{0} succeeded, callback response content:{1}", uploadTask.uploadPath, responseContent);
+            }
+            catch (OssException ex)
+            {
+                Debug.WriteLine("Failed with error code: {0}; Error info: {1}. \nRequestID:{2}\tHostID:{3}",
+                    ex.ErrorCode, ex.Message, ex.RequestId, ex.HostId);
+                if (retryTimes <= 3)
+                {
                     Debug.WriteLine("retry times " + retryTimes);
                     initOSSClient();
-                    return UploadMultipart(bucketName, uploadTask);
-                }
-                else
-                {
-                    return null;
+                    return PutObject(bucketName, uploadTask);
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Failed with error info: {0}", ex.Message);
+            }
+            return responseContent;
         }
 
-        private static string InitiateMultipartUpload(String bucketName,UploadTask uploadTask)
+        private static string GetCallbackResponse(PutObjectResult putObjectResult)
         {
-            var request = new InitiateMultipartUploadRequest(bucketName, uploadTask.uploadPath);
-            var result = client.InitiateMultipartUpload(request);
-            return result.UploadId;
-        }
-
-        private static List<PartETag> UploadParts(String bucketName, String objectName, String fileToUpload,
-                                                  String uploadId, int partSize)
-        {
-            var fi = new FileInfo(fileToUpload);
-            var fileSize = fi.Length;
-            var partCount = fileSize / partSize;
-            if (fileSize % partSize != 0)
+            string callbackResponse = null;
+            using (var stream = putObjectResult.ResponseStream)
             {
-                partCount++;
+                var buffer = new byte[4 * 1024];
+                var bytesRead = stream.Read(buffer, 0, buffer.Length);
+                callbackResponse = Encoding.Default.GetString(buffer, 0, bytesRead);
             }
-            Progress.getProgress().totalSize = fileSize;
-            Progress.getProgress().transferredSize = 0;
-
-
-            var partETags = new List<PartETag>();
-            using (var fs = File.Open(fileToUpload, FileMode.Open))
-            {
-                for (var i = 0; i < partCount; i++)
-                {
-                    var skipBytes = (long)partSize * i;
-                    fs.Seek(skipBytes, 0);
-                    var size = (partSize < fileSize - skipBytes) ? partSize : (fileSize - skipBytes);
-                    var request = new UploadPartRequest(bucketName, objectName, uploadId)
-                    {
-                        InputStream = fs,
-                        PartSize = size,
-                        PartNumber = i + 1
-                    };
-                    request.StreamTransferProgress += streamProgressCallback;
-                    var result = client.UploadPart(request);
-                   
-                    partETags.Add(result.PartETag);
-                    Debug.WriteLine(String.Format("finish {0}/{1}", partETags.Count, partCount));
-                    Progress.getProgress().transferredSize += size;
-                }
-            }
-            return partETags;
-        }
-
-        
-
-        private static CompleteMultipartUploadResult CompleteUploadPart(String bucketName,
-            String uploadId, List<PartETag> partETags,UploadTask uploadTask)
-        {
-            var metadata = BuildCallbackMetadata(Dictionary.API+ "images", uploadTask.toCallBackString());
-            var completeMultipartUploadRequest =
-                new CompleteMultipartUploadRequest(bucketName, uploadTask.uploadPath, uploadId)
-                {
-                    Metadata = metadata
-                };
-            foreach (var partETag in partETags)
-            {
-                completeMultipartUploadRequest.PartETags.Add(partETag);
-            }
-            return client.CompleteMultipartUpload(completeMultipartUploadRequest);
+            return callbackResponse;
         }
 
 
@@ -160,7 +112,7 @@ namespace cloudimgWinform.utils.oss
 
         public static void streamProgressCallback(object sender, StreamTransferProgressArgs args)
         {
-            double precent = (double)(Progress.getProgress().transferredSize+args.TransferredBytes) / Progress.getProgress().totalSize;
+            double precent = (double)(args.TransferredBytes / args.TotalBytes);
             Progress.getProgress().progress = (int)Math.Floor(precent * 100);
         }
     }

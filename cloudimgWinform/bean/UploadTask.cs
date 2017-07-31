@@ -75,21 +75,30 @@ namespace cloudimgWinform.bean
             this.status = Dictionary.STATUS_UPLOAD;
             this.uploadPath = getKey() + (this.path.Substring(this.path.LastIndexOf(Path.DirectorySeparatorChar) + 1));
             UploadTaskDao.updateInfo(this);
-            Debug.WriteLine(String.Format("upload file to {0}", this.uploadPath));
             try
             {
                 //图片上传
                 if (File.Exists(this.path))
                 {
-                    CompleteMultipartUploadResult result= OSSUpload.UploadMultipart(Dictionary.OSSConfig.Buket, this);
-                    if (result == null || result.ResponseMetadata == null)
+                    Debug.WriteLine(String.Format("upload file to {0}", this.uploadPath));
+                    String result = OSSUpload.PutObject(Dictionary.OSSConfig.Buket, this);
+                    Debug.WriteLine(result);
+                    if (result == null)
                     {
                         UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_FAIL, this.id);
                     }
                     else
                     {
-                        Debug.WriteLine(result.ResponseMetadata);
-                        UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_SUCCESS, this.id);
+                        JObject jsonObj = JObject.Parse(result);
+                        if (int.Parse(jsonObj["responseCode"].ToString()) == 0)
+                        {
+                            UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_SUCCESS, this.id);
+                        }
+                        else
+                        {
+                            UploadTaskDao.updateStatus(Dictionary.STATUS_UPLOAD_FAIL, this.id);
+                        }
+
                     }
                 }
                 else
@@ -125,7 +134,6 @@ namespace cloudimgWinform.bean
         {
             while (true)
             {
-                Debug.WriteLine("scan file to upload");
                 try
                 {
                     Thread.Sleep(3000);
@@ -164,8 +172,6 @@ namespace cloudimgWinform.bean
             sb.Append(this.size);
             sb.Append("&userId=");
             sb.Append(User.loginUser.userId);
-            sb.Append("&accessToken=");
-            sb.Append(User.loginUser.accessToken);
             sb.Append("&clientType=");
             sb.Append(Dictionary.CLIENT_TYPE);
             return sb.ToString();
